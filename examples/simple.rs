@@ -1,17 +1,5 @@
-use std::io::Write;
+use CodeGenLib::x86::prog::Prog;
 
-use CodeGenLib::asm::{ASMCall, REGISTER};
-
-pub fn main() -> std::io::Result<()> {
-    let mut call = ASMCall::new();
-    call.mov_16(REGISTER::AX, 16);
-
-    let mut file = std::fs::OpenOptions::new().create(true).write(true).open("out.bin")?;
-
-    let generated = call.generated;
-    file.write(&generated)?;
-
-    file.flush()?;
-
-    Ok(())
+pub fn main() {
+    let prog = Prog::new("test.o");
 }
