@@ -1,3 +1,4 @@
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum REGISTER {
     EAX, EBX, ECX, EDX,                 // 32bit
     AX, BX, CX, DX,                     // 16bit
@@ -15,6 +16,7 @@ fn to_bytes_16(value: u16) -> (u8, u8) {
     (arr[0], arr[1])
 }
 
+#[derive(Clone)]
 pub struct ASMCall {
     pub generated: Vec<u8>,
 }
