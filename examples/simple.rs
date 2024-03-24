@@ -1,12 +1,12 @@
 use faerie::ArtifactError;
-use CodeGenLib::x86::{builder::Builder, asm::REGISTER};
+use CodeGenLib::x86::builder::Builder;
 
 pub fn main() -> Result<(), ArtifactError>{
     let mut builder = Builder::new();
 
-    let func = builder.add_function("ret_five");
-    func.mov(REGISTER::EAX, 5);
-    func.ret();
+    builder.add_function("ret_five")
+        .call("callme")
+        .ret_int(5);
 
     builder.build("test.o")?;
 
