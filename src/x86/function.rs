@@ -16,9 +16,9 @@ impl Function {
         let mut asm = ASMCall::new();
         let mut gen = vec![];
         asm.push(REGISTER::EBP);
-        for b in asm.generated { gen.push(b) }
+        for b in asm.generated.clone() { gen.push(b) }
         asm.mov_reg(REGISTER::EBP, REGISTER::ESP);
-        for b in asm.generated { gen.push(b) }
+        for b in asm.generated.clone() { gen.push(b) }
         
 
         Self {

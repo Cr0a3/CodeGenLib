@@ -1,3 +1,5 @@
+use std::vec;
+
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum REGISTER {
     EAX, EBX, ECX, EDX,                 // 32bit
@@ -103,109 +105,271 @@ impl ASMCall {
     pub fn mov_reg(&mut self, from: REGISTER, to: REGISTER) {
         match from {
             REGISTER::EAX => {
-                match to {
-                    REGISTER::EAX => todo!(),
-                    REGISTER::EBX => todo!(),
-                    REGISTER::ECX => todo!(),
-                    REGISTER::EDX => todo!(),
-                    REGISTER::AX => todo!(),
-                    REGISTER::BX => todo!(),
-                    REGISTER::CX => todo!(),
-                    REGISTER::DX => todo!(),
-                    REGISTER::AH => todo!(),
-                    REGISTER::AL => todo!(),
-                    REGISTER::BH => todo!(),
-                    REGISTER::BL => todo!(),
-                    REGISTER::CH => todo!(),
-                    REGISTER::CL => todo!(),
-                    REGISTER::DH => todo!(),
-                    REGISTER::DL => todo!(),
-                    REGISTER::ESI => todo!(),
-                    REGISTER::EDI => todo!(),
-                    REGISTER::EBP => todo!(),
-                    REGISTER::EIP => todo!(),
-                    REGISTER::ESP => todo!(),
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC0],
+                    REGISTER::EBX => vec![0x89, 0xD8],
+                    REGISTER::ECX => vec![0x89, 0xC8],
+                    REGISTER::EDX => vec![0x89, 0xD0],
+                    REGISTER::ESI => vec![0x89, 0xF0],
+                    REGISTER::EDI => vec![0x89, 0xF8],
+                    REGISTER::EBP => vec![0x89, 0xE8],
+                    REGISTER::ESP => vec![0x89, 0xE0],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
             REGISTER::EBX => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC3],
+                    REGISTER::EBX => vec![0x89, 0xDB],
+                    REGISTER::ECX => vec![0x89, 0xCB],
+                    REGISTER::EDX => vec![0x89, 0xD3],
+                    REGISTER::ESI => vec![0x89, 0xF3],
+                    REGISTER::EDI => vec![0x89, 0xFB],
+                    REGISTER::EBP => vec![0x89, 0xEB],
+                    REGISTER::ESP => vec![0x89, 0xE3],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
             REGISTER::ECX => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC1],
+                    REGISTER::EBX => vec![0x89, 0xD9],
+                    REGISTER::ECX => vec![0x89, 0xC9],
+                    REGISTER::EDX => vec![0x89, 0xD1],
+                    REGISTER::ESI => vec![0x89, 0xF1],
+                    REGISTER::EDI => vec![0x89, 0xF9],
+                    REGISTER::EBP => vec![0x89, 0xE9],
+                    REGISTER::ESP => vec![0x89, 0xE1],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
             REGISTER::EDX => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC2],
+                    REGISTER::EBX => vec![0x89, 0xDA],
+                    REGISTER::ECX => vec![0x89, 0xCA],
+                    REGISTER::EDX => vec![0x89, 0xD2],
+                    REGISTER::ESI => vec![0x89, 0xF2],
+                    REGISTER::EDI => vec![0x89, 0xFA],
+                    REGISTER::EBP => vec![0x89, 0xEA],
+                    REGISTER::ESP => vec![0x89, 0xE2],
+                    _ => vec![0x00],
                 };
-            REGISTER::AX => {
-                match to {
-                    
-                };
-            REGISTER::BX => {
-                match to {
-                    
-                };
-            REGISTER::CX => {
-                match to {
-                    
-                };
-            REGISTER::DX => {
-                match to {
-                    
-                };
-            REGISTER::AH => {
-                match to {
-                    
-                };
-            REGISTER::AL => {
-                match to {
-                    
-                };
-            REGISTER::BH => {
-                match to {
-                    
-                };
-            REGISTER::BL => {
-                match to {
-                    
-                };
-            REGISTER::CH => {
-                match to {
-                    
-                };
-            REGISTER::CL => {
-                match to {
-                    
-                };
-            REGISTER::DH => {
-                match to {
-                    
-                };
-            REGISTER::DL => {
-                match to {
-                    
-                };
+                self.generated = gen;
+            },
             REGISTER::ESI => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC2],
+                    REGISTER::EBX => vec![0x89, 0xDA],
+                    REGISTER::ECX => vec![0x89, 0xCA],
+                    REGISTER::EDX => vec![0x89, 0xD2],
+                    REGISTER::ESI => vec![0x89, 0xF2],
+                    REGISTER::EDI => vec![0x89, 0xFA],
+                    REGISTER::EBP => vec![0x89, 0xEA],
+                    REGISTER::ESP => vec![0x89, 0xE2],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
             REGISTER::EDI => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC2],
+                    REGISTER::EBX => vec![0x89, 0xDA],
+                    REGISTER::ECX => vec![0x89, 0xCA],
+                    REGISTER::EDX => vec![0x89, 0xD2],
+                    REGISTER::ESI => vec![0x89, 0xF2],
+                    REGISTER::EDI => vec![0x89, 0xFA],
+                    REGISTER::EBP => vec![0x89, 0xEA],
+                    REGISTER::ESP => vec![0x89, 0xE2],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
             REGISTER::EBP => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC5],
+                    REGISTER::EBX => vec![0x89, 0xDD],
+                    REGISTER::ECX => vec![0x89, 0xCD],
+                    REGISTER::EDX => vec![0x89, 0xD5],
+                    REGISTER::ESI => vec![0x89, 0xF5],
+                    REGISTER::EDI => vec![0x89, 0xFD],
+                    REGISTER::EBP => vec![0x89, 0xED],
+                    REGISTER::ESP => vec![0x89, 0xE5],
+                    _ => vec![0x00],
                 };
-            REGISTER::EIP => {
-                match to {
-                    
-                };
+                self.generated = gen;
+            },
             REGISTER::ESP => {
-                match to {
-                    
+                let gen = match to {
+                    REGISTER::EAX => vec![0x89, 0xC4],
+                    REGISTER::EBX => vec![0x89, 0xDC],
+                    REGISTER::ECX => vec![0x89, 0xCC],
+                    REGISTER::EDX => vec![0x89, 0xD4],
+                    REGISTER::ESI => vec![0x89, 0xFC],
+                    REGISTER::EDI => vec![0x89, 0xFC],
+                    REGISTER::EBP => vec![0x89, 0xEC],
+                    REGISTER::ESP => vec![0x89, 0xE4],
+                    _ => vec![0x00],
                 };
+                self.generated = gen;
+            },
+            REGISTER::AX => {
+                let gen = match to {
+                    REGISTER::AX => vec![0x66, 0x89, 0xc0],
+                    REGISTER::BX => vec![0x66, 0x89, 0xD8],
+                    REGISTER::CX => vec![0x66, 0x89, 0xC8],
+                    REGISTER::DX => vec![0x66, 0x89, 0xD0],
+                    _ => vec![0x00]
+                };
+                self.generated = gen;
+            },
+            REGISTER::BX => {
+                let gen = match to {
+                    REGISTER::AX => vec![0x66, 0x89, 0xc3],
+                    REGISTER::BX => vec![0x66, 0x89, 0xDB],
+                    REGISTER::CX => vec![0x66, 0x89, 0xCB],
+                    REGISTER::DX => vec![0x66, 0x89, 0xD3],
+                    _ => vec![0x00]
+                };
+                self.generated = gen;
+            },
+            REGISTER::CX => {
+                let gen = match to {
+                    REGISTER::AX => vec![0x66, 0x89, 0xc1],
+                    REGISTER::BX => vec![0x66, 0x89, 0xD9],
+                    REGISTER::CX => vec![0x66, 0x89, 0xC9],
+                    REGISTER::DX => vec![0x66, 0x89, 0xD1],
+                    _ => vec![0x00]
+                };
+                self.generated = gen;
+            },
+            REGISTER::DX => {
+                let gen = match to {
+                    REGISTER::AX => vec![0x66, 0x89, 0xC2],
+                    REGISTER::BX => vec![0x66, 0x89, 0xDA],
+                    REGISTER::CX => vec![0x66, 0x89, 0xCA],
+                    REGISTER::DX => vec![0x66, 0x89, 0xD2],
+                    _ => vec![0x00]
+                };
+                self.generated = gen;
+            },
+            REGISTER::AH => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE4],
+                    REGISTER::AL => vec![0x88, 0xC4],
+                    REGISTER::BH => vec![0x88, 0xFC],
+                    REGISTER::BL => vec![0x88, 0xDC],
+                    REGISTER::CH => vec![0x88, 0xEC],
+                    REGISTER::CL => vec![0x88, 0xCC],
+                    REGISTER::DH => vec![0x88, 0xF4],
+                    REGISTER::DL => vec![0x88, 0xD4],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::AL => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE0],
+                    REGISTER::AL => vec![0x88, 0xC0],
+                    REGISTER::BH => vec![0x88, 0xF8],
+                    REGISTER::BL => vec![0x88, 0xD8],
+                    REGISTER::CH => vec![0x88, 0xE8],
+                    REGISTER::CL => vec![0x88, 0xC8],
+                    REGISTER::DH => vec![0x88, 0xF0],
+                    REGISTER::DL => vec![0x88, 0xD0],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::BH => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xEF],
+                    REGISTER::AL => vec![0x88, 0xCF],
+                    REGISTER::BH => vec![0x88, 0xFF],
+                    REGISTER::BL => vec![0x88, 0xDF],
+                    REGISTER::CH => vec![0x88, 0xEF],
+                    REGISTER::CL => vec![0x88, 0xCF],
+                    REGISTER::DH => vec![0x88, 0xFF],
+                    REGISTER::DL => vec![0x88, 0xDF],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::BL => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE3],
+                    REGISTER::AL => vec![0x88, 0xC3],
+                    REGISTER::BH => vec![0x88, 0xFB],
+                    REGISTER::BL => vec![0x88, 0xDB],
+                    REGISTER::CH => vec![0x88, 0xEB],
+                    REGISTER::CL => vec![0x88, 0xCB],
+                    REGISTER::DH => vec![0x88, 0xF3],
+                    REGISTER::DL => vec![0x88, 0xD3],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::CH => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE5],
+                    REGISTER::AL => vec![0x88, 0xC5],
+                    REGISTER::BH => vec![0x88, 0xFD],
+                    REGISTER::BL => vec![0x88, 0xDD],
+                    REGISTER::CH => vec![0x88, 0xED],
+                    REGISTER::CL => vec![0x88, 0xCD],
+                    REGISTER::DH => vec![0x88, 0xF5],
+                    REGISTER::DL => vec![0x88, 0xD5],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::CL => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE1],
+                    REGISTER::AL => vec![0x88, 0xC1],
+                    REGISTER::BH => vec![0x88, 0xF9],
+                    REGISTER::BL => vec![0x88, 0xD9],
+                    REGISTER::CH => vec![0x88, 0xE9],
+                    REGISTER::CL => vec![0x88, 0xC9],
+                    REGISTER::DH => vec![0x88, 0xF1],
+                    REGISTER::DL => vec![0x88, 0xD1],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::DH => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE6],
+                    REGISTER::AL => vec![0x88, 0xC6],
+                    REGISTER::BH => vec![0x88, 0xFE],
+                    REGISTER::BL => vec![0x88, 0xDE],
+                    REGISTER::CH => vec![0x88, 0xEE],
+                    REGISTER::CL => vec![0x88, 0xCE],
+                    REGISTER::DH => vec![0x88, 0xF6],
+                    REGISTER::DL => vec![0x88, 0xD6],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::DL => {
+                let gen = match to {
+                    REGISTER::AH => vec![0x88, 0xE2],
+                    REGISTER::AL => vec![0x88, 0xC2],
+                    REGISTER::BH => vec![0x88, 0xFA],
+                    REGISTER::BL => vec![0x88, 0xDA],
+                    REGISTER::CH => vec![0x88, 0xEA],
+                    REGISTER::CL => vec![0x88, 0xCA],
+                    REGISTER::DH => vec![0x88, 0xF2],
+                    REGISTER::DL => vec![0x88, 0xD2],
+                    _ => vec![0x00],
+                };
+                self.generated = gen;
+            },
+            REGISTER::EIP => {},
+        }
     }
 
     pub fn to_memory(&mut self, adress: u32, target: REGISTER) {
