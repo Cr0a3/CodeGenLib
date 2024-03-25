@@ -4,7 +4,7 @@ use CodeGenLib::x86::builder::Builder;
 pub fn main() -> Result<(), ArtifactError>{
     let mut builder = Builder::new();
 
-    builder.add_function("ret_five")
+    builder.add_function("main")
         .call("callme")
         .ret_int(5);
 

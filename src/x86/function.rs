@@ -15,11 +15,10 @@ impl Function {
     pub fn new(name: &str) -> Self {
         let mut asm = ASMCall::new();
         let mut gen = vec![];
-        asm.push(REGISTER::EBP);
+        asm.push(REGISTER::RBP);
         for b in asm.generated.clone() { gen.push(b) }
-        asm.mov_reg(REGISTER::EBP, REGISTER::ESP);
+        asm.mov_reg(REGISTER::RBP, REGISTER::RSP);
         for b in asm.generated.clone() { gen.push(b) }
-        
 
         Self {
             gen: gen.clone(),

@@ -2,11 +2,17 @@ use std::vec;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum REGISTER {
+    RAX, RBX, RCX, RDX,                 // 64bit
     EAX, EBX, ECX, EDX,                 // 32bit
     AX, BX, CX, DX,                     // 16bit
     AH, AL, BH, BL, CH, CL, DH, DL,     // 8bit
 
-    ESI, EDI, EBP, EIP, ESP,            // Indexs + Pointers (32bit)
+    RSI, RDI, RBP, RIP, RSP,            // Indexs + Pointers (64bit)
+}
+
+fn to_bytes_64(value: u64) -> (u8, u8, u8, u8, u8, u8, u8, u8) {
+    let arr = value.to_le_bytes();
+    (arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7])
 }
 
 fn to_bytes_32(value: u32) -> (u8, u8, u8, u8) {
@@ -32,11 +38,37 @@ impl ASMCall {
         }
     }
 
+    pub fn mov_64(&mut self, register: REGISTER, value: u64) {
+        match register {
+            REGISTER::RAX =>  {
+                let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value); 
+                self.generated = vec![0x48, 0xb8, x1, x2, x3, x4, x5, x6, x7, x8];
+            },
+            REGISTER::RBX => {
+                let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value);
+                self.generated = vec![0x48, 0xbb, x1, x2, x3, x4, x5, x6, x7, x8];
+            },
+            REGISTER::RCX => {
+                let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value);
+                self.generated = vec![0x48, 0xb9, x1, x2, x3, x4, x5, x6, x7, x8];
+            },
+            REGISTER::RDX => {
+                let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value);
+                self.generated = vec![0x48, 0xba, x1, x2, x3, x4, x5, x6, x7, x8];
+            },
+            _ => {}
+        }
+    }
+
     pub fn mov_32(&mut self, register: REGISTER, value: u32) {
         match register {
             REGISTER::EAX =>  {
                 let (x1, x2, x3, x4) = to_bytes_32(value); 
                 self.generated = vec![0xb8, x1, x2, x3, x4];
+            },
+            REGISTER::EBX => {
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0xbb, x1, x2, x3, x4];
             },
             REGISTER::ECX => {
                 let (x1, x2, x3, x4) = to_bytes_32(value);
@@ -46,26 +78,6 @@ impl ASMCall {
                 let (x1, x2, x3, x4) = to_bytes_32(value);
                 self.generated = vec![0xba, x1, x2, x3, x4];
             },
-            REGISTER::EBX => {
-                let (x1, x2, x3, x4) = to_bytes_32(value);
-                self.generated = vec![0xbb, x1, x2, x3, x4];
-            },
-            REGISTER::ESP => {
-                let (x1, x2, x3, x4) = to_bytes_32(value);
-                self.generated = vec![0xbc, x1, x2, x3, x4];
-            },
-            REGISTER::EBP => {
-                let (x1, x2, x3, x4) = to_bytes_32(value);
-                self.generated = vec![0xbd, x1, x2, x3, x4];
-            }
-            REGISTER::ESI => {
-                let (x1, x2, x3, x4) = to_bytes_32(value);
-                self.generated = vec![0xbe, x1, x2, x3, x4];
-            }
-            REGISTER::EDI => {
-                let (x1, x2, x3, x4) = to_bytes_32(value);
-                self.generated = vec![0xbf, x1, x2, x3, x4];
-            }
             _ => {}
         }
     }
@@ -602,5 +614,9 @@ impl ASMCall {
 
     pub fn int(&mut self, nr: u8) {
         self.generated = vec![0xCD, nr];
+    }
+
+    pub fn endbr32(&mut self) {
+        self.generated = vec![0x00];
     }
 }
