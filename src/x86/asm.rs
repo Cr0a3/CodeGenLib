@@ -645,4 +645,16 @@ impl ASMCall {
     pub fn endbr64(&mut self) {
         self.generated = vec![0xF3, 0x0F, 0x1E, 0xFA];
     }
+
+    pub fn cli(&mut self) {
+         self.generated = vec![0xFA];
+    }
+
+    pub fn sti(&mut self) {
+         self.generated = vec![0xFB];
+    }
+
+    pub fn clc(&mut self) {
+         self.generated = vec![0xF8];
+    }
 }
