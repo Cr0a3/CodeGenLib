@@ -42,7 +42,7 @@ impl ASMCall {
         match register {
             REGISTER::RAX =>  {
                 let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value); 
-                self.generated = vec![0x48, 0xb8, x1, x2, x3, x4, x5, x6, x7, x8];
+                self.generated = vec![0x48, 0xa3, x1, x2, x3, x4, x5, x6, x7, x8];
             },
             REGISTER::RBX => {
                 let (x1, x2, x3, x4, x5, x6, x7, x8) = to_bytes_64(value);

@@ -54,12 +54,16 @@ impl Function {
             reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
             reg == REGISTER::RSP {
             self.asm.mov_64(reg, value);
+            println!("64");
         } else if reg == REGISTER::EAX || reg == REGISTER::EBX || reg == REGISTER::ECX || reg == REGISTER::EDX {   // 32bit Register
             self.asm.mov_32(reg, value as u32);
+            println!("64");
         } else if reg == REGISTER::AX || reg == REGISTER::BX || reg == REGISTER::DX {
             self.asm.mov_16(reg, value as u16);
+            println!("64");
         } else {
             self.asm.mov_8(reg, value as u8);
+            println!("64");
         }
 
         self.add_gen();
@@ -78,9 +82,8 @@ impl Function {
         self
     }
 
-    pub fn asm_call(&mut self, adr: u64) -> &mut Self {
-        self.asm.mov_64(REGISTER::RAX, adr);
-        self.asm.call_reg(REGISTER::RAX);
+    pub fn asm_call(&mut self, adr: u32) -> &mut Self {
+        self.asm.call(adr);
         self.add_gen();
 
         self
