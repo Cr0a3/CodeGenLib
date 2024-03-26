@@ -1,7 +1,12 @@
 [package]
 name = "CodeGenLib"
-version = "0.0.1"
+version = "0.0.0"
 edition = "2021"
+description = "A libary to generate x86-64Bit machine code (like LLVM)"
+reposentory = "https://github.com/Toni-Graphics/CodeGenLib"
+keywords = ["codegen", "code generation", "x64", "compiler"]
+documentation = "https://docs.rs/CodeGenLib"
+categories = ["development-tools::ffi"] 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
