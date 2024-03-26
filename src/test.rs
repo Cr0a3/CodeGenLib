@@ -1,3 +1,5 @@
+//! All test of CodeGenLib
+
 use crate::x86::{function::Function, mem::AdressManager};
 
 #[test]

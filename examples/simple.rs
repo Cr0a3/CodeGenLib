@@ -1,5 +1,5 @@
 use faerie::ArtifactError;
-use CodeGenLib::x86::builder::Builder;
+use CodeGenLib::Builder;
 
 pub fn main() -> Result<(), ArtifactError>{
     let mut builder = Builder::new();

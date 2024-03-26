@@ -1,5 +1,6 @@
 use super::mem::AdressManager;
 
+/// The Variabel struct is the handler for variables
 #[derive(Clone)]
 pub struct Variabel<'a> {
     pub size: u64,
@@ -28,12 +29,13 @@ impl<'a> Variabel<'a> {
         }
     }
 
-    // Returns adress of variable
+    // Returns the adress of variable
     pub fn adr(&self) -> u64 {
         self.adrmng.get_adr(&self.name) as u64
     }
 }
 
+/// Size/type of the variabel
 pub enum VarDataType {
     U16, I16,
     U32, I32,

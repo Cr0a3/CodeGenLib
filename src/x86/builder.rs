@@ -4,6 +4,12 @@ use target_lexicon::{Architecture, BinaryFormat, Environment, OperatingSystem, T
 use super::{function::*, staticv::*};
 use super::mem::AdressManager;
 
+
+/// The builder is a wrapper around the entire code generation
+/// via the classes: <br>
+/// `Function`, `StaticValue`, `ExternFunction`, `AdressManager`
+/// 
+/// It also create the object file via the `faerie` crate
 pub struct Builder<'a> {
     functions: Vec<Function<'a>>,
     statics: Vec<StaticValue>,
@@ -12,6 +18,7 @@ pub struct Builder<'a> {
 }
 
 impl<'a> Builder<'a> {
+    /// Creates a new instance of Builder
     pub fn new() -> Self {
         let memmng = AdressManager::new((0x00, 0x00));  // ToDo: Custom memory ranges
         Self {
@@ -22,6 +29,8 @@ impl<'a> Builder<'a> {
         }
     }
 
+    /// Adds a new global function with the name `name`
+    /// To the builder
     pub fn add_function(&mut self, name: &'a str) -> &'a mut Function {
         let func = Function::new(name, &mut self.mem);
         self.functions.push( func );
@@ -30,6 +39,11 @@ impl<'a> Builder<'a> {
             .expect("error while getting last function (CodeGenLib/x86/builder.rs/41")
     }
 
+    /// Adds referenc to static value to the builder.
+    /// 
+    /// `name`   - name of the static value
+    /// <br>
+    /// `global` - import/export from/to other file 
     pub fn add_static(&mut self, name: &str, global: bool) -> &mut StaticValue {
         let stat = StaticValue::new(name, global);
         self.statics.push( stat );
@@ -38,6 +52,7 @@ impl<'a> Builder<'a> {
             .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47")
     }
     
+    /// Adds function import from another file
     pub fn add_extern_fn(&mut self, name: &str) -> &mut ExternFunction {
         let func = ExternFunction { name: name.into() };
         self.externs.push( func );
@@ -46,6 +61,8 @@ impl<'a> Builder<'a> {
         .expect("error while getting last function (CodeGenLib/x86/builder.rs/53")
     }
 
+    /// Builds all functions, symbols, etc into one
+    /// object file with the name `name`
     pub fn build(&mut self, name: &str) -> Result<(), ArtifactError> {
         let file = File::create(Path::new(name))?;
         let mut obj = ArtifactBuilder::new(Triple {

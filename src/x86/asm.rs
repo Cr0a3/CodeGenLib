@@ -1,5 +1,6 @@
 use std::vec;
 
+/// The name of the register to use
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum REGISTER {
     RAX, RBX, RCX, RDX,                 // 64bit
@@ -26,18 +27,25 @@ fn to_bytes_16(value: u16) -> (u8, u8) {
     (arr[0], arr[1])
 }
 
+
+/// The struct ASMCall generates the machine code
+/// based on assembly instructions
+///
+/// `generated` - `Vec<u8>` of the generated machine code (**only the last instruction**)
 #[derive(Clone)]
 pub struct ASMCall {
     pub generated: Vec<u8>,
 }
 
 impl ASMCall {
+    /// Creates new instance of ASMCall
     pub fn new() -> Self {
         Self {
             generated: vec![]
         }
     }
 
+    /// Moves value into one of the 64bit register
     pub fn mov_64(&mut self, register: REGISTER, value: u64) {
         match register {
             REGISTER::RAX =>  {
@@ -60,6 +68,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves value into one of the 32bit register
     pub fn mov_32(&mut self, register: REGISTER, value: u32) {
         match register {
             REGISTER::EAX =>  {
@@ -82,6 +91,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves value into one of the 16bit register
     pub fn mov_16(&mut self, register: REGISTER, value: u16) {
         match register {
             REGISTER::AX =>{
@@ -100,6 +110,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves value into one of the 8bit register
     pub fn mov_8(&mut self, register: REGISTER, value: u8) {
         match register {
             REGISTER::AH => { self.generated = vec![0xb4, value]; },
@@ -114,6 +125,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves value from one register into another
     pub fn mov_reg(&mut self, target: REGISTER, source: REGISTER) {
         match target {
             REGISTER::EAX => {
@@ -424,6 +436,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves the value from the register to specified memory adress
     pub fn to_memory(&mut self, adress: u64, target: REGISTER) {
         match target {
             REGISTER::EAX => {
@@ -486,6 +499,7 @@ impl ASMCall {
         }
     }
 
+    /// Moves the value from the sepcified memory adress into the target register
     pub fn from_memory(&mut self, adress: u32, target: REGISTER) {
         match target {
             REGISTER::EAX => {
@@ -556,6 +570,7 @@ impl ASMCall {
         }
     }
 
+    /// Pushes the register onto the stack
     pub fn push(&mut self, reg: REGISTER) {
         match reg {
             REGISTER::AX  =>    {   self.generated = vec![0x66, 0x50];  }
@@ -574,6 +589,7 @@ impl ASMCall {
         }
     }
 
+    /// Pops the register from the stack
     pub fn pop(&mut self, reg: REGISTER) {
         match reg {
             REGISTER::AX =>     {   self.generated = vec![0x66, 0x58]; }
@@ -592,20 +608,24 @@ impl ASMCall {
         }
     }
 
+    /// Does nothing
     pub fn nop(&mut self) {
         self.generated = vec![0x90];
     }
 
+    /// Jumps to the specifed adress
     pub fn jmp(&mut self, adress: u32) {
         let (x1, x2, x3, x4) = to_bytes_32(adress);
         self.generated = vec![0xe9, x1, x2, x3, x4];
     }
 
+    /// Calls the specified adress
     pub fn call(&mut self, adress: u32) {
         let (x1, x2, x3, x4) = to_bytes_32(adress);
         self.generated = vec![0xe8, x1, x2, x3, x4];
     }
 
+    /// Calls the adress which is stored into the register
     pub fn call_reg(&mut self, target: REGISTER) {
         match target {
             REGISTER::RAX => { self.generated = vec![0xFF, 0xD0] }
@@ -620,6 +640,7 @@ impl ASMCall {
         }
     }
 
+    /// Jumps to the adress which is stored into the register
     pub fn jmp_reg(&mut self, target: REGISTER) {
         match target {
             REGISTER::RAX => { self.generated = vec![0xFF, 0xE0] }
@@ -634,26 +655,32 @@ impl ASMCall {
         }
     }
 
+    /// Return
     pub fn ret(&mut self) {
         self.generated = vec![0xC3];
     }
 
+    /// Calls an interupt
     pub fn int(&mut self, nr: u8) {
         self.generated = vec![0xCD, nr];
     }
 
+    /// Just endbr64
     pub fn endbr64(&mut self) {
         self.generated = vec![0xF3, 0x0F, 0x1E, 0xFA];
     }
 
+    /// deactivates interrupts
     pub fn cli(&mut self) {
          self.generated = vec![0xFA];
     }
 
+    /// activates interrupts
     pub fn sti(&mut self) {
          self.generated = vec![0xFB];
     }
 
+    
     pub fn clc(&mut self) {
          self.generated = vec![0xF8];
     }

@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+/// The AdressManager class is the handler for memory managment
+/// 
+/// !**interfears with the memory managment of evrything other**!
 #[derive(Clone)]  
 pub struct AdressManager {
     adrbox: AdressBox,
@@ -24,6 +27,7 @@ impl AdressManager {
         }
     }
 
+    /// Registeres a variabel with the name `name` and size `size`
     pub fn reg_var(&mut self, name: &String, size: u64) -> i128 {
         let adr = self.adrbox.last_adr.clone();
 
@@ -42,6 +46,9 @@ impl AdressManager {
         adr as i128
     } 
 
+    /// Returns `AdressBoxEntry` of variabel with name `name`
+    /// 
+    /// AdressBoxEntry.size is 0 means it couldn't find variabel with name `name`
     pub fn get_entry(&self, name: &String) -> &AdressBoxEntry {
         match self.adrbox.adress.get(name) {
             Some(entry) => entry,
@@ -49,6 +56,9 @@ impl AdressManager {
         }
     }
 
+    /// Returns adress of variabel with name `name`
+    /// 
+    /// -1 equals None
     pub fn get_adr(&self, name: &String) -> i128 {
         let entry = self.get_entry(name).to_owned();
 
@@ -59,6 +69,9 @@ impl AdressManager {
         entry.adr as i128
     }
 
+    /// Returns size of variabel with name `name`
+    /// 
+    /// -1 equals None
     pub fn get_size(&self, name: &String) -> i128 {
         let entry = self.get_entry(name).to_owned();
 
@@ -70,6 +83,7 @@ impl AdressManager {
     }
 }
 
+/// Struct for managing adresses
 #[derive(Clone)]
 
 pub struct AdressBox {
@@ -86,6 +100,7 @@ impl AdressBox {
     }
 }
 
+/// Entry in AdressBox
 #[derive(Clone)]
 pub struct AdressBoxEntry {
     pub size: u64,

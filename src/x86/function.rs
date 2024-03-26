@@ -2,7 +2,7 @@ use super::asm::{ASMCall, REGISTER};
 use super::mem::AdressManager;
 use super::var::{Variabel, VarDataType};
 
-
+/// The Function class is a handler for the code generation of one function
 #[derive(Clone)]   
 pub struct Function<'a> {
     pub name: String,
@@ -45,6 +45,7 @@ impl<'a> Function<'a> {
         }
     }
 
+    /// Adds a return
     pub fn asm_ret(&mut self) -> &mut Self {
         self.asm.nop();
         self.add_gen();
@@ -56,6 +57,7 @@ impl<'a> Function<'a> {
         self
     }
 
+    /// Adds a assembly mov command
     pub fn asm_mov(&mut self, reg: REGISTER, value: u64) -> &mut Self {
         if  reg == REGISTER::RAX || reg == REGISTER::RBX || reg == REGISTER::RCX || reg == REGISTER::RDX || 
             reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
@@ -78,6 +80,7 @@ impl<'a> Function<'a> {
         self
     }
 
+    /// Returns an intenger
     pub fn ret_int(&mut self, value: u64) -> &mut Self {
         if value > 0xffffffff {
             self.asm_mov(REGISTER::RAX, value);
@@ -89,6 +92,7 @@ impl<'a> Function<'a> {
         self
     }
 
+    /// Adds an call to the adress
     pub fn asm_call(&mut self, adr: u32) -> &mut Self {
         self.asm.call(adr);
         self.add_gen();
@@ -96,6 +100,7 @@ impl<'a> Function<'a> {
         self
     }
 
+    /// Calls a function with the name of `dest`
     pub fn call(&mut self, dest: &str) -> &mut Self {
         self.esymbols.push(
             ExternSymbol {
@@ -110,8 +115,9 @@ impl<'a> Function<'a> {
         self
     }
 
+    /// Adds a variable to the function
     pub fn create_var(&mut self, name: &str, typ: VarDataType) -> &mut Variabel {
-        let adr = self.adrmng.to_owned();
+        let mut adr = self.adrmng.to_owned();
 
         let var = Variabel::new(typ, &name.to_string(), &mut adr);
         self.vars.push(var);
@@ -121,16 +127,19 @@ impl<'a> Function<'a> {
             .expect("error while getting last function (CodeGenLib/x86/function.rs/121")
     }
 
+    /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {
         self.gen.clone()
     }
 }
 
+/// A struct for storing extern functions
 #[derive(Clone)]
 pub struct ExternFunction {
     pub name: String,
 }
 
+/// A struct for storing extern symbols
 #[derive(Clone)]
 pub struct ExternSymbol {
     pub start: String,
