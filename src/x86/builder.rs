@@ -1,54 +1,46 @@
 use std::{fs::File, path::Path};
 use faerie::{ArtifactBuilder, ArtifactError, Decl, Link};
 use target_lexicon::{Architecture, BinaryFormat, Environment, OperatingSystem, Triple, Vendor};
-use crate::x86::{function::*, staticv::*};
+use super::{function::*, staticv::*};
+use super::mem::AdressManager;
 
-pub struct Builder {
-    functions: Vec<Function>,
+pub struct Builder<'a> {
+    functions: Vec<Function<'a>>,
     statics: Vec<StaticValue>,
     externs: Vec<ExternFunction>,
+    mem: AdressManager
 }
 
-impl Builder {
+impl<'a> Builder<'a> {
     pub fn new() -> Self {
+        let memmng = AdressManager::new((0x00, 0x00));  // ToDo: Custom memory ranges
         Self {
             functions: vec![],
             statics: vec![],
             externs: vec![],
+            mem: memmng,
         }
     }
 
-    pub fn add_function(&mut self, name: &str) -> &mut Function {
-        let func = Function::new(name);
+    pub fn add_function(&mut self, name: &'a str) -> &'a mut Function {
+        let func = Function::new(name, &mut self.mem);
         self.functions.push( func );
-        self.get_last_fn()
+        let list = self.functions.clone();
+        self.functions.get_mut(list.len() -1)
+            .expect("error while getting last function (CodeGenLib/x86/builder.rs/41")
     }
 
     pub fn add_static(&mut self, name: &str, global: bool) -> &mut StaticValue {
         let stat = StaticValue::new(name, global);
         self.statics.push( stat );
-        self.get_last_st()
+        let list = self.statics.clone();
+        self.statics.get_mut(list.len() -1)
+            .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47")
     }
     
     pub fn add_extern_fn(&mut self, name: &str) -> &mut ExternFunction {
         let func = ExternFunction { name: name.into() };
         self.externs.push( func );
-        self.get_last_exfn()
-    }
-
-    fn get_last_fn(&mut self) -> &mut Function {
-        let list = self.functions.clone();
-        self.functions.get_mut(list.len() -1)
-        .expect("error while getting last function (CodeGenLib/x86/builder.rs/41")
-    }
-
-    fn get_last_st(&mut self) -> &mut StaticValue {
-        let list = self.statics.clone();
-        self.statics.get_mut(list.len() -1)
-        .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47")
-    }
-
-    fn get_last_exfn(&mut self) -> &mut ExternFunction {
         let list = self.externs.clone();
         self.externs.get_mut(list.len() -1)
         .expect("error while getting last function (CodeGenLib/x86/builder.rs/53")

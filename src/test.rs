@@ -1,8 +1,9 @@
-use crate::x86::function::Function;
+use crate::x86::{function::Function, mem::AdressManager};
 
 #[test]
 fn function_ret_codegen() {
-    let mut func = Function::new("test");
+    let mut adr = AdressManager::new((0, 0));
+    let mut func = Function::new("test", &mut adr);
     func.asm_ret();
 
     let expected_gen: Vec<u8> = vec![
