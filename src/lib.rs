@@ -29,6 +29,11 @@ mod test;
 mod jit;
 
 pub use x86::*;
+pub use x86::function::Function as Function;
+pub use x86::builder::Builder as Builder;
+
+#[cfg(feature = "jit")]
+pub use jit::typed::JIT_Runtime as jit;
 
 /// ArtifactError exportet from the faerie crate
 pub use faerie::ArtifactError as ArtifactError;

@@ -1,6 +1,6 @@
 [package]
 name = "CodeGenLib"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2021"
 description = "A libary to generate x86-64Bit machine code (like LLVM)"
 reposentory = "https://github.com/Toni-Graphics/CodeGenLib"
