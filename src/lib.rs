@@ -25,6 +25,9 @@ pub mod x86;
 #[cfg(test)]
 mod test;
 
+#[cfg(feature = "jit")]
+mod jit;
+
 pub use x86::*;
 
 /// ArtifactError exportet from the faerie crate
