@@ -695,7 +695,7 @@ impl ASMCall {
         self.generated = vec![0x37];
    }
 
-   /// Inecrements the register by 1
+    /// Inecrements the register by 1
     pub fn inc(&mut self, register: REGISTER) {
         match register {
             REGISTER::RAX =>    { self.generated = vec![0x48, 0xFF, 0xC0]; }, 
@@ -722,6 +722,37 @@ impl ASMCall {
             REGISTER::RDI =>    { self.generated = vec![0x48, 0xFF, 0xC7]}, 
             REGISTER::RBP =>    { self.generated = vec![0x48, 0xFF, 0xC5]},
             REGISTER::RSP =>    { self.generated = vec![0x48, 0xFF, 0xC5]},
+            _ => {}
+        }
+    }
+
+    /// Decrements the register by 1
+    pub fn dec(&mut self, register: REGISTER) {
+        match register {
+            REGISTER::RAX =>    { self.generated = vec![0x48, 0xFF, 0xC8]; }, 
+            REGISTER::RBX =>    { self.generated = vec![0x48, 0xFF, 0xCB]; }, 
+            REGISTER::RCX =>    { self.generated = vec![0x48, 0xFF, 0xC9]; }, 
+            REGISTER::RDX =>    { self.generated = vec![0x48, 0xFF, 0xCA]; },
+            REGISTER::EAX =>    { self.generated = vec![0xFF, 0xC8]; }, 
+            REGISTER::EBX =>    { self.generated = vec![0xFF, 0xCB]; }, 
+            REGISTER::ECX =>    { self.generated = vec![0xFF, 0xC9]; }, 
+            REGISTER::EDX =>    { self.generated = vec![0xFF, 0xCA]; }, 
+            REGISTER:::AX =>    { self.generated = vec![0x66, 0xFF, 0xC8]},
+            REGISTER:::BX =>    { self.generated = vec![0x66, 0xFF, 0xCB]},
+            REGISTER:::CX =>    { self.generated = vec![0x66, 0xFF, 0xC9]},
+            REGISTER:::DX =>    { self.generated = vec![0x66, 0xFF, 0xCA]},
+            REGISTER::AH =>     { self.generated = vec![0xFE, 0xCC]}, 
+            REGISTER::AL =>     { self.generated = vec![0xFE, 0xC8]}, 
+            REGISTER::BH =>     { self.generated = vec![0xFE, 0xCF]}, 
+            REGISTER::BL =>     { self.generated = vec![0xFE, 0xCB]}, 
+            REGISTER::CH =>     { self.generated = vec![0xFE, 0xCD]}, 
+            REGISTER::CL =>     { self.generated = vec![0xFE, 0xC9]}, 
+            REGISTER::DH =>     { self.generated = vec![0xFE, 0xCE]}, 
+            REGISTER::DL =>     { self.generated = vec![0xFE, 0xCA]},
+            REGISTER::RSI =>    { self.generated = vec![0x48, 0xFF, 0xCE]}, 
+            REGISTER::RDI =>    { self.generated = vec![0x48, 0xFF, 0xCF]}, 
+            REGISTER::RBP =>    { self.generated = vec![0x48, 0xFF, 0xCD]},
+            REGISTER::RSP =>    { self.generated = vec![0x48, 0xFF, 0xCC]},
             _ => {}
         }
     }
