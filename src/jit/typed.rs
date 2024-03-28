@@ -1,20 +1,25 @@
-use crate::x86::function::Function;
-use crate::JitFunctionError;
-
 //! <h4>Jit execution</h4>
 //! With this module you can jit execute a function
 
-pub trait JIT_Runtime {
+use crate::x86::function::Function;
+use crate::{Result, CodeGenLibError};
+
+pub trait JitRuntime {
     /// Returns the function
-    fn typed<T, X>() -> Result(fn(T) -> X, JitFunctionError);
+    fn typed<T, X>(&self) -> Result<extern "C" fn() -> X>;
 }
 
-impl JIT_Runtime for Function {
-    fn typed<T, X>() -> (fn(T) -> X) {
-        let func_ptr: extern "C" fn(T) -> X = unsafe {
-                std::mem::transmute(self.generated.as_ptr()) 
-            };
+impl<'a> JitRuntime for Function<'a> {
+    /// Tr
+    fn typed<Params, Ret>(&self) -> Result<extern "C"  fn() -> Ret> {
+        let func_ptr: extern "C" fn() -> Ret = unsafe {
+            std::mem::transmute(self.gen.as_ptr())
+        };
 
-        (func_ptr)
+        if self.esymbols.len() != 0 {   // ExternSymbols isn't empty
+            return Err(CodeGenLibError::JitFunctionsNoExtern)
+        }
+
+        Ok(func_ptr)
     }
 }

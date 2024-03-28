@@ -115,8 +115,8 @@ impl<'a> Function<'a> {
         self
     }
 
-    /// Adds a variable to the function
-    pub fn create_var(&mut self, name: &str, typ: VarDataType) -> &mut Variabel {
+    /*/// Adds a variable to the function
+    pub fn create_var(&mut self, name: &'a str, typ: VarDataType) -> &mut Variabel {
         let mut adr = self.adrmng.to_owned();
 
         let var = Variabel::new(typ, &name.to_string(), &mut adr);
@@ -125,7 +125,7 @@ impl<'a> Function<'a> {
         let list = self.vars.clone();
         self.vars.get_mut(list.len() -1)
             .expect("error while getting last function (CodeGenLib/x86/function.rs/121")
-    }
+    }*/
 
     /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {

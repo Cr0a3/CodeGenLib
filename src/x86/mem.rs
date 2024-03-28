@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::{Result, CodeGenLibError};
 
 /// The AdressManager class is the handler for memory managment
 /// 
@@ -8,7 +9,6 @@ pub struct AdressManager {
     adrbox: AdressBox,
 
     // memory range
-    mem_range_start: u64,
     mem_range_end: u64,
     mem_range: bool,
 }
@@ -22,7 +22,6 @@ impl AdressManager {
         Self {
             adrbox: AdressBox::new(mem_range_start),
             mem_range: mem_rang,
-            mem_range_start: mem_range_start,
             mem_range_end: mem_range_end,
         }
     }
@@ -80,6 +79,19 @@ impl AdressManager {
         }
 
         entry.size as i128
+    }
+
+    /// Checks if the adress rang is ok
+    pub fn ok(&self) -> Result<bool> {
+        if self.mem_range {
+            if self.mem_range_end > self.adrbox.last_adr {
+                return Ok(true);
+            } else {
+                return Err(CodeGenLibError::AdrOutOfMem);
+            }
+        }
+
+        Ok(true)
     }
 }
 

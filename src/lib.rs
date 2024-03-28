@@ -21,19 +21,25 @@
 //! The examples would make a elf file with a function named call wich just calls 
 //! a function named callme and then returns a 1  
 
-pub mod x86;
-#[cfg(test)]
-mod test;
 
+#![allow(non_snake_case)]
+
+pub mod x86;
+pub mod opt;
+pub mod error;
 #[cfg(feature = "jit")]
-mod jit;
+pub mod jit;
 
 pub use x86::*;
 pub use x86::function::Function as Function;
 pub use x86::builder::Builder as Builder;
+pub use x86::mem::AdressManager as AdressManager;
+pub use opt::optimize::Optimize as OptimizeTrait;
+pub use error::Result as Result;
+pub use error::CodeGenLibError as CodeGenLibError;
 
 #[cfg(feature = "jit")]
-pub use jit::typed::JIT_Runtime as jit;
+pub use jit::typed::JitRuntime as Jit;
 
 /// ArtifactError exportet from the faerie crate
 pub use faerie::ArtifactError as ArtifactError;

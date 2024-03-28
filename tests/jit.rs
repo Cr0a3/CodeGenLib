@@ -1,9 +1,10 @@
-use CodeGenLib::{Function, Jit, AdressManager, Result};
+use crate::{Function, Jit, AdressManager, Result};
 
-pub fn main() -> Result<()> {
+#[test]
+pub fn jit_sum() -> Result<()> {
     let mut adr = AdressManager::new((0, 0));
     let mut func = Function::new(
-        "five",
+        "add",
         &mut adr
     );
 
@@ -13,7 +14,7 @@ pub fn main() -> Result<()> {
         let typed = func.typed::<(), u32>().unwrap();
         let res = typed();
 
-        println!("5 = {}", res);
+        assert_eq!(5, res);
     };
 
     Ok(())
