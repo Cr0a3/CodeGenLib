@@ -9,6 +9,6 @@ pub trait Optimize {
 
 impl<'a> Optimize for Function<'a> {
     fn optimize(&mut self) {
-
+        
     }
 }

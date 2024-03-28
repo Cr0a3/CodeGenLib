@@ -680,8 +680,18 @@ impl ASMCall {
          self.generated = vec![0xFB];
     }
 
-    
+    /// Clear carry flag
     pub fn clc(&mut self) {
          self.generated = vec![0xF8];
     }
+
+    /// Clear direction flag
+    pub fn cld(&mut self) {
+        self.generated = vec![0xFC];
+   }
+
+    /// ASCII adjust AL after addition
+    pub fn aaa(&mut self) {
+        self.generated = vec![0x37];
+   }
 }
