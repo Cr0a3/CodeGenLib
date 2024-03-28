@@ -756,4 +756,135 @@ impl ASMCall {
             _ => {}
         }
     }
+
+    /// ASCII adjust AX before division
+    pub fn aad(&mut self) {
+        self.generated = vec![0xD5];
+    }
+
+    /// ASCII adjust AX after multiplication
+    pub fn aam(&mut self) {
+        self.generated = vec![0xD4]
+    } 
+
+    /// ASCII adjust AL after subtraction
+    pub fn aas(&mut self) {
+        self.generated = vec![0x3F]
+    }
+    
+    /// Add value to 64Bit register
+    pub fn adc_64(&mut self, register: REGISTER, value: u32) {
+        match register {
+            REGISTER::RAX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x15, x1, x2, x3, x4];
+            },
+            REGISTER::RBX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD3, x1, x2, x3, x4];
+            },
+            REGISTER::RCX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD1, x1, x2, x3, x4];
+            },
+            REGISTER::RDX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD2, x1, x2, x3, x4];
+            },
+            REGISTER::RSI => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD6, x1, x2, x3, x4];
+            },
+            REGISTER::RDI => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD7, x1, x2, x3, x4];
+            },
+            REGISTER::RBP => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD5, x1, x2, x3, x4];
+            },
+            REGISTER::RSP => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x48, 0x81, 0xD4, x1, x2, x3, x4];
+            },
+            _ => {},
+        }
+    }
+
+    /// Add value to 32Bit register
+    pub fn adc_32(&mut self, register: REGISTER, value: u32) {
+        match register {
+            REGISTER::EAX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x15, x1, x2, x3, x4];
+            },
+            REGISTER::EBX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x81, 0xD3, x1, x2, x3, x4];
+            },
+            REGISTER::ECX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x81, 0xD1, x1, x2, x3, x4];
+            },
+            REGISTER::EDX => { 
+                let (x1, x2, x3, x4) = to_bytes_32(value);
+                self.generated = vec![0x81, 0xD2, x1, x2, x3, x4];
+            },
+            _ => {},
+        }
+    }
+
+    /// Add value to 16Bit register
+    pub fn adc_16(&mut self, register: REGISTER, value: u16) {
+        match register {
+            REGISTER::AX => { 
+                let (x1, x2) = to_bytes_16(value);
+                self.generated = vec![0x66, 0x15, x1, x2];
+            },
+            REGISTER::BX => { 
+                let (x1, x2) = to_bytes_16(value);
+                self.generated = vec![0x66, 0x81, 0xD3, x1, x2];
+            },
+            REGISTER::CX => { 
+                let (x1, x2) = to_bytes_16(value);
+                self.generated = vec![0x66, 0x81, 0xD1, x1, x2];
+            },
+            REGISTER::DX => { 
+                let (x1, x2) = to_bytes_16(value);
+                self.generated = vec![0x66, 0x81, 0xD2, x1, x2];
+            },
+            _ => {},
+        }
+    }
+
+    /// Add value to 8Bit register
+    pub fn adc_8(&mut self, register: REGISTER, value: u8) {
+        match register {
+            REGISTER::AH => { 
+                self.generated = vec![0x80, 0xD4, value.to_le_bytes()];
+            },
+            REGISTER::AL => { 
+                self.generated = vec![0x14, 0xFF, value.to_le_bytes()];
+            },
+            REGISTER::BH => { 
+                self.generated = vec![0x80, 0xD7, value.to_le_bytes()];
+            },
+            REGISTER::BL => { 
+                self.generated = vec![0x80, 0xD3, value.to_le_bytes()];
+            },
+            REGISTER::CH => { 
+                self.generated = vec![0x80, 0xD5, value.to_le_bytes()];
+            },
+            REGISTER::CL => { 
+                self.generated = vec![0x80, 0xD1, value.to_le_bytes()];
+            },
+            REGISTER::DH => { 
+                self.generated = vec![0x80, 0xD6, value.to_le_bytes()];
+            },
+            REGISTER::DL => { 
+                self.generated = vec![0x80, 0xD2, value.to_le_bytes()];
+            },
+            _ => {},
+        }
+    }
 }
