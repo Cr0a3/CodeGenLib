@@ -694,4 +694,35 @@ impl ASMCall {
     pub fn aaa(&mut self) {
         self.generated = vec![0x37];
    }
+
+   /// Inecrements the register by 1
+    pub fn inc(&mut self, register: REGISTER) {
+        match register {
+            REGISTER::RAX =>    { self.generated = vec![0x48, 0xFF, 0xC0]; }, 
+            REGISTER::RBX =>    { self.generated = vec![0x48, 0xFF, 0xC3]; }, 
+            REGISTER::RCX =>    { self.generated = vec![0x48, 0xFF, 0xC1]; }, 
+            REGISTER::RDX =>    { self.generated = vec![0x48, 0xFF, 0xC2]; },
+            REGISTER::EAX =>    { self.generated = vec![0xFF, 0xC0]; }, 
+            REGISTER::EBX =>    { self.generated = vec![0xFF, 0xC3]; }, 
+            REGISTER::ECX =>    { self.generated = vec![0xFF, 0xC1]; }, 
+            REGISTER::EDX =>    { self.generated = vec![0xFF, 0xC2]; }, 
+            REGISTER:::AX =>    { self.generated = vec![0x66, 0xFF, 0xC0]},
+            REGISTER:::BX =>    { self.generated = vec![0x66, 0xFF, 0xC3]},
+            REGISTER:::CX =>    { self.generated = vec![0x66, 0xFF, 0xC1]},
+            REGISTER:::DX =>    { self.generated = vec![0x66, 0xFF, 0xC2]},
+            REGISTER::AH =>     { self.generated = vec![0xFE, 0xC4]}, 
+            REGISTER::AL =>     { self.generated = vec![0xFE, 0xC0]}, 
+            REGISTER::BH =>     { self.generated = vec![0xFE, 0xC7]}, 
+            REGISTER::BL =>     { self.generated = vec![0xFE, 0xC3]}, 
+            REGISTER::CH =>     { self.generated = vec![0xFE, 0xC5]}, 
+            REGISTER::CL =>     { self.generated = vec![0xFE, 0xC1]}, 
+            REGISTER::DH =>     { self.generated = vec![0xFE, 0xC6]}, 
+            REGISTER::DL =>     { self.generated = vec![0xFE, 0xC2]},
+            REGISTER::RSI =>    { self.generated = vec![0x48, 0xFF, 0xC6]}, 
+            REGISTER::RDI =>    { self.generated = vec![0x48, 0xFF, 0xC7]}, 
+            REGISTER::RBP =>    { self.generated = vec![0x48, 0xFF, 0xC5]},
+            REGISTER::RSP =>    { self.generated = vec![0x48, 0xFF, 0xC5]},
+            _ => {}
+        }
+    }
 }
