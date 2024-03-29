@@ -67,13 +67,6 @@ impl ASMCall {
             _ => {}
         }
     }
-
-    
-
-    /// Just endbr64
-    pub fn endbr64(&mut self) {
-        self.generated = vec![0xF3, 0x0F, 0x1E, 0xFA];
-    }
     /// Add with carry value to 64Bit register
     pub fn adc_64(&mut self, register: REGISTER, value: u64) {
         if value > u32::MAX as u64 {

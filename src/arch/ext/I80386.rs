@@ -1,29 +1,17 @@
-use crate::x86::asm::{REGISTER, to_bytes_16, to_bytes_32, to_bytes_64};
+use crate::x86::asm::{REGISTER, to_bytes_32};
 use crate::arch::AsmCall::AsmCall;
 
 pub trait I80386 {
     /// Moves value into one of the 32bit register
-    pub fn mov_32(register: REGISTER, value: u32) -> Vec<u8>
+    fn mov_32(register: REGISTER, value: u32) -> Vec<u8>;
 
     /// Add with carry value to 32Bit register
-    pub fn adc_32(register: REGISTER, value: u32) -> Vec<u8>,
-
-    /// Pushes all 32bit registers to the stack
-    pub fn pushad() -> Vec<u8>,
-
-    /// Pops all 32bit registers from the stack
-    pub fn pophad() -> Vec<u8>,
-
-    /// Pushes all 32bit registers to the stack
-    pub fn pushfd() -> Vec<u8>,
-
-    /// Pops all 32bit registers from the stack
-    pub fn pophfd() -> Vec<u8>,
+    fn adc_32(register: REGISTER, value: u32) -> Vec<u8>;
 }
 
 impl I80386 for AsmCall {
     /// Moves value into one of the 32bit register
-    pub fn mov_32(register: REGISTER, value: u32) -> Vec<u8> {
+    fn mov_32(register: REGISTER, value: u32) -> Vec<u8> {
         match register {
             REGISTER::EAX =>  {
                 let (x1, x2, x3, x4) = to_bytes_32(value); 
@@ -46,7 +34,7 @@ impl I80386 for AsmCall {
     }
 
     /// Add with carry value to 32Bit register
-    pub fn adc_32(register: REGISTER, value: u32) -> Vec<u8> {
+    fn adc_32(register: REGISTER, value: u32) -> Vec<u8> {
         match register {
             REGISTER::EAX => { 
                 let (x1, x2, x3, x4) = to_bytes_32(value);

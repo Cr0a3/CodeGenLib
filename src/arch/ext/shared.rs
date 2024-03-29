@@ -3,46 +3,49 @@ use crate::arch::AsmCall::AsmCall;
 
 pub trait IShared {
     /// Inecrements the register by 1
-    pub fn inc(register: REGISTER) -> Vec<u8>,
+     fn inc(register: REGISTER) -> Vec<u8>;
 
 
     /// Decrements the register by 1
-    pub fn dec(register: REGISTER) -> Vec<u8>,
+     fn dec(register: REGISTER) -> Vec<u8>;
 
     /// Moves value from one register into another
-    pub fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8>,
+     fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8>;
 
     /// Moves the value from the register to specified memory adress
-    pub fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8>,
+     fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8>;
 
     /// Moves the value from the sepcified memory adress into the target register
-    pub fn from_memory(adress: u32, target: REGISTER) -> Vec<u8>,
+     fn from_memory(adress: u32, target: REGISTER) -> Vec<u8>;
 
     /// Pushes the register onto the stack
-    pub fn push(reg: REGISTER) -> Vec<u8>,
+     fn push(reg: REGISTER) -> Vec<u8>;
 
     /// Pops the register from the stack
-    pub fn pop(reg: REGISTER) -> Vec<u8>,
+     fn pop(reg: REGISTER) -> Vec<u8>;
 
     /// Jumps to the specifed adress
-    pub fn jmp(adress: u32) -> Vec<u8>,
+     fn jmp(adress: u32) -> Vec<u8>;
 
     /// Calls the specified adress
-    pub fn call(adress: u32) -> Vec<u8>,
+     fn call(adress: u32) -> Vec<u8>;
 
     /// Add with carry value to register `dest` to register `target`
-    pub fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8>,
+    fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8>;
 
     /// Calls the adress which is stored into the register
-    pub fn call_reg(target: REGISTER) -> Vec<u8>,
+    fn call_reg(target: REGISTER) -> Vec<u8>;
 
     /// Jumps to the adress which is stored into the register
-    pub fn jmp_reg(target: REGISTER) -> Vec<u8>
+    fn jmp_reg(target: REGISTER) -> Vec<u8>;
+
+    /// Just endbr64
+    fn endbr64() -> Vec<u8>;
 }
 
 impl IShared for AsmCall {
     /// Inecrements the register by 1
-    pub fn inc(register: REGISTER) -> Vec<u8> {
+     fn inc(register: REGISTER) -> Vec<u8> {
         match register {
             REGISTER::RCX =>    vec![0x48, 0xFF, 0xC1],  
             REGISTER::RDX =>    vec![0x48, 0xFF, 0xC2], 
@@ -73,7 +76,7 @@ impl IShared for AsmCall {
     }
 
     /// Decrements the register by 1
-    pub fn dec(register: REGISTER) -> Vec<u8> {
+     fn dec(register: REGISTER) -> Vec<u8> {
         match register {
             REGISTER::RAX =>   vec![0x48, 0xFF, 0xC8],  
             REGISTER::RBX =>   vec![0x48, 0xFF, 0xCB],  
@@ -104,7 +107,7 @@ impl IShared for AsmCall {
     }
 
     /// Moves value from one register into another
-    pub fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8> {
+     fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::EAX => {
                 match source {
@@ -391,7 +394,7 @@ impl IShared for AsmCall {
     }
 
     /// Moves the value from the register to specified memory adress
-    pub fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8> {
+     fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::EAX => {
                 let (x1, x2, x3, x4) = to_bytes_32(adress as u32);
@@ -454,7 +457,7 @@ impl IShared for AsmCall {
     }
 
     /// Moves the value from the sepcified memory adress into the target register
-    pub fn from_memory(adress: u32, target: REGISTER) -> Vec<u8> {
+     fn from_memory(adress: u32, target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::EAX => {
                 let (x1, x2, x3, x4) = to_bytes_32(adress);
@@ -525,7 +528,7 @@ impl IShared for AsmCall {
     }
 
     /// Pushes the register onto the stack
-    pub fn push(reg: REGISTER) -> Vec<u8> {
+     fn push(reg: REGISTER) -> Vec<u8> {
         match reg {
             REGISTER::AX  => vec![0x66, 0x50],
             REGISTER::CX  => vec![0x66, 0x51],
@@ -544,7 +547,7 @@ impl IShared for AsmCall {
     }
 
     /// Pops the register from the stack
-    pub fn pop(reg: REGISTER) -> Vec<u8> {
+     fn pop(reg: REGISTER) -> Vec<u8> {
         match reg {
             REGISTER::AX =>     vec![0x66, 0x58], 
             REGISTER::CX =>     vec![0x66, 0x59], 
@@ -563,19 +566,19 @@ impl IShared for AsmCall {
     }
 
     /// Jumps to the specifed adress
-    pub fn jmp(adress: u32) -> Vec<u8> {
+     fn jmp(adress: u32) -> Vec<u8> {
         let (x1, x2, x3, x4) = to_bytes_32(adress);
         vec![0xe9, x1, x2, x3, x4]
     }
 
     /// Calls the specified adress
-    pub fn call(adress: u32) -> Vec<u8> {
+     fn call(adress: u32) -> Vec<u8> {
         let (x1, x2, x3, x4) = to_bytes_32(adress);
         vec![0xe8, x1, x2, x3, x4]
     }
 
     /// Add with carry value to register `dest` to register `target`
-    pub fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8> {
+     fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8> {
         match dest {
             REGISTER::RAX => { 
                 match src {
@@ -836,13 +839,12 @@ impl IShared for AsmCall {
                     _ => vec![0],
                 }
             }, 
-
-            _ => vec![0x00],
+        _ => vec![0x00],
         }
     }
 
     /// Calls the adress which is stored into the register
-    pub fn call_reg(target: REGISTER) -> Vec<u8> {
+     fn call_reg(target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::RAX => { vec![0xFF, 0xD0] }
             REGISTER::RBX => { vec![0xFF, 0xD3] }
@@ -857,7 +859,7 @@ impl IShared for AsmCall {
     }
 
     /// Jumps to the adress which is stored into the register
-    pub fn jmp_reg(target: REGISTER) -> Vec<u8> {
+     fn jmp_reg(target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::RAX => { vec![0xFF, 0xE0] }
             REGISTER::RBX => { vec![0xFF, 0xE3] }
@@ -869,5 +871,10 @@ impl IShared for AsmCall {
             REGISTER::RSP => { vec![0xFF, 0xE4] }
             _ => vec![0x00],
         }
+    }
+
+    /// Just endbr64
+    fn endbr64() -> Vec<u8> {
+        vec![0xF3, 0x0F, 0x1E, 0xFA]
     }
 }

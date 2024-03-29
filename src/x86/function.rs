@@ -1,5 +1,5 @@
 use super::asm::REGISTER;
-use crate::arch::{AsmCall::AsmCall, ext::AMD64};
+use crate::arch::{AsmCall::AsmCall, ext::*};
 use super::mem::AdressManager;
 use super::var::{Variabel, VarDataType};
 
@@ -7,7 +7,7 @@ use super::var::{Variabel, VarDataType};
 #[derive(Clone)]   
 pub struct Function<'a> {
     pub name: String,
-    pub gen: Vec<u8>,
+    pub gen: Vec<Vec<u8>>,
     asm: AsmCall,
     pos: usize,
 
@@ -19,14 +19,11 @@ pub struct Function<'a> {
 
 impl<'a> Function<'a> {
     pub fn new(name: &'a str, adrmng: &'a mut AdressManager) -> Function<'a> {
-        let mut asm = AsmCall::new();
+        let mut asm = AsmCall {};
         let mut gen = vec![];
-        asm.endbr64();
-        for b in asm.generated.clone() { gen.push(b) }
-        asm.push(REGISTER::RBP);
-        for b in asm.generated.clone() { gen.push(b) }
-        asm.mov_reg(REGISTER::RBP, REGISTER::RSP);
-        for b in asm.generated.clone() { gen.push(b) }
+        gen.push( asm.endbr64() );
+        gen.push( asm.push(REGISTER::RBP) );
+        gen.push( asm.mov_reg(REGISTER::RBP, REGISTER::RSP) );
 
         Function {
             gen: gen.clone(),
@@ -39,21 +36,11 @@ impl<'a> Function<'a> {
         }
     }
 
-    fn add_gen(&mut self) {
-        for b in self.asm.generated.clone() {
-            self.gen.push(b);
-            self.pos += 1;
-        }
-    }
-
     /// Adds a return
     pub fn asm_ret(&mut self) -> &mut Self {
-        self.asm.nop();
-        self.add_gen();
-        self.asm.pop(REGISTER::RBP);
-        self.add_gen();
-        self.asm.ret();
-        self.add_gen();
+        self.gen.push( self.asm::nop() );
+        self.gen.push( self.asm::pop(REGISTER::RBP) );
+        self.gen.push( self.asm::ret() );
 
         self
     }
@@ -63,24 +50,21 @@ impl<'a> Function<'a> {
         if  reg == REGISTER::RAX || reg == REGISTER::RBX || reg == REGISTER::RCX || reg == REGISTER::RDX || 
             reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
             reg == REGISTER::RSP {
-            self.asm.mov_64(reg, value);
+            self.gen.push( self.asm.mov_64(reg, value) );
         } else if reg == REGISTER::EAX || reg == REGISTER::EBX || reg == REGISTER::ECX || reg == REGISTER::EDX {   // 32bit Register
-            self.asm.mov_32(reg, value as u32);
+            self.gen.push( self.asm::mov_32(reg, value as u32) );
         } else if reg == REGISTER::AX || reg == REGISTER::BX || reg == REGISTER::DX {
-            self.asm.mov_16(reg, value as u16);
+            self.gen.push( self.asm::mov_16(reg, value as u16) );
         } else {
-            self.asm.mov_8(reg, value as u8);
+            self.gen.push( self.asm::mov_8(reg, value as u8) );
         }
-
-        self.add_gen();
 
         self
     }
 
     /// Adds a assembly mov from register to register command
     pub fn asm_mov_reg(&mut self, from: REGISTER, to: REGISTER) -> &mut Self {
-        self.asm.mov_reg(from, to);
-        self.add_gen();
+        self.gen.push( self.asm.mov_reg(from, to) );
 
         self
     }
@@ -90,24 +74,21 @@ impl<'a> Function<'a> {
         if  reg == REGISTER::RAX || reg == REGISTER::RBX || reg == REGISTER::RCX || reg == REGISTER::RDX || 
             reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
             reg == REGISTER::RSP {
-            self.asm.adc_64(reg, value);
+            self.gen.push( self.asm.adc_64(reg, value) );
         } else if reg == REGISTER::EAX || reg == REGISTER::EBX || reg == REGISTER::ECX || reg == REGISTER::EDX {   // 32bit Register
-            self.asm.adc_32(reg, value as u32);
+            self.gen.push( self.asm.adc_32(reg, value as u32) );
         } else if reg == REGISTER::AX || reg == REGISTER::BX || reg == REGISTER::DX {
-            self.asm.adc_16(reg, value as u16);
+            self.gen.push( self.asm.adc_16(reg, value as u16) );
         } else {
-            self.asm.adc_8(reg, value as u8);
+            self.gen.push( self.asm.adc_8(reg, value as u8) );
         }
-
-        self.add_gen();
 
         self
     }
 
     /// Adds a assembly adc command which adds the registers together
     pub fn asm_adc_reg(&mut self, dest: REGISTER, src: REGISTER) -> &mut Self {
-        self.asm.adc_reg(dest, src);
-        self.add_gen();
+        self.gen.push( self.asm.adc_reg(dest, src) );
 
         self
     }
@@ -126,8 +107,7 @@ impl<'a> Function<'a> {
 
     /// Adds an call to the adress
     pub fn asm_call(&mut self, adr: u32) -> &mut Self {
-        self.asm.call(adr);
-        self.add_gen();
+        self.gen.push( self.asm.call(adr) );
 
         self
     }
@@ -163,7 +143,14 @@ impl<'a> Function<'a> {
 
     /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {
-        self.gen.clone()
+        let out: Vec<u8> = vec![];
+        for v in self.gen {
+            for b in v {
+                out.push(b);
+            }
+        }
+
+        out
     }
 }
 

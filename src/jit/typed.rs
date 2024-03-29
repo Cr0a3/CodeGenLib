@@ -2,6 +2,7 @@
 //! With this module you can jit execute a function
 
 use crate::asm::ASMCall;
+use crate::arch::ext::*;
 use crate::x86::function::Function;
 use crate::{Result, CodeGenLibError};
 
@@ -17,10 +18,10 @@ impl<'a> JitRuntime for Function<'a> {
             std::mem::transmute(self.gen.as_ptr())
         };
 
-        if self.gen[0] == 0xF3 && self.gen[1] == 0x0F && self.gen[2] == 0x1E && self.gen[3] ==  0xFA {
-            for i in 0..3 {
-                self.gen[i] = 0;
-            }
+        let asm = AsmCall {};
+
+        if self.gen[0] == asm::endbr4() {
+            self.gen.remove(0);
         }
 
         if self.esymbols.len() != 0 {   // ExternSymbols isn't empty
