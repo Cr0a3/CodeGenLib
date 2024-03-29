@@ -11,7 +11,7 @@ pub struct Function<'a> {
     pos: usize,
 
     pub esymbols: Vec<ExternSymbol>,
-    pub vars: Vec<Variabel<'a>>,
+    pub vars: Vec<Variabel>,
 
     adrmng: &'a AdressManager,
 }
@@ -115,17 +115,19 @@ impl<'a> Function<'a> {
         self
     }
 
-    /*/// Adds a variable to the function
-    pub fn create_var(&mut self, name: &'a str, typ: VarDataType) -> &mut Variabel {
-        let mut adr = self.adrmng.to_owned();
-
-        let var = Variabel::new(typ, &name.to_string(), &mut adr);
+    /// Adds a variable to the function
+    pub fn create_var(&mut self, name: &'a str, typ: VarDataType) -> Variabel {
+        let var = Variabel::new(typ, &name.to_string(), self.adrmng);
         self.vars.push(var);
 
+       self.get_last_var()
+    }
+
+    fn get_last_var(&mut self) -> Variabel {
         let list = self.vars.clone();
-        self.vars.get_mut(list.len() -1)
-            .expect("error while getting last function (CodeGenLib/x86/function.rs/121")
-    }*/
+        self.vars.get(list.len() -1)
+            .expect("error while getting last function (CodeGenLib/x86/function.rs/121").to_owned()
+    }
 
     /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {
