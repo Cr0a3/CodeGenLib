@@ -157,8 +157,8 @@ impl<'a> Function<'a> {
     fn get_last_var(&mut self) -> Variabel {
         let list = self.vars.clone();
         self.vars.get_mut(list.len() -1)
-            .expect("error while getting last function (CodeGenLib/x86/function.rs/121")
-    }*/
+            .expect("error while getting last function (CodeGenLib/x86/function.rs/121").to_owned()
+    }
 
     /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {
