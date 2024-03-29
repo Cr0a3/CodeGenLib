@@ -3,6 +3,7 @@ use faerie::{ArtifactBuilder, ArtifactError, Decl, Link};
 use target_lexicon::{Architecture, BinaryFormat, Environment, OperatingSystem, Triple, Vendor};
 use super::{function::*, staticv::*};
 use super::mem::AdressManager;
+use crate::OptimizeTrait;
 
 
 /// The builder is a wrapper around the entire code generation
@@ -113,6 +114,11 @@ impl<'a> Builder<'a> {
                 obj.link(Link { from: &sym.start, to: &sym.dest, at: sym.at as u64 + 1})?;
             }
 
+        }
+
+        // optimization time
+        for func in self.functions.iter() {
+            func.optimize();
         }
 
         obj.write(file)?;
