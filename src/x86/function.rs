@@ -63,18 +63,49 @@ impl<'a> Function<'a> {
             reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
             reg == REGISTER::RSP {
             self.asm.mov_64(reg, value);
-            println!("64");
         } else if reg == REGISTER::EAX || reg == REGISTER::EBX || reg == REGISTER::ECX || reg == REGISTER::EDX {   // 32bit Register
             self.asm.mov_32(reg, value as u32);
-            println!("64");
         } else if reg == REGISTER::AX || reg == REGISTER::BX || reg == REGISTER::DX {
             self.asm.mov_16(reg, value as u16);
-            println!("64");
         } else {
             self.asm.mov_8(reg, value as u8);
-            println!("64");
         }
 
+        self.add_gen();
+
+        self
+    }
+
+    /// Adds a assembly mov from register to register command
+    pub fn asm_mov_reg(&mut self, from: REGISTER, to: REGISTER) -> &mut Self {
+        self.asm.mov_reg(from, to);
+        self.add_gen();
+
+        self
+    }
+
+    /// Adds a assembly adc command
+    pub fn asm_adc(&mut self, reg: REGISTER, value: u64) -> &mut Self {
+        if  reg == REGISTER::RAX || reg == REGISTER::RBX || reg == REGISTER::RCX || reg == REGISTER::RDX || 
+            reg == REGISTER::RBP || reg == REGISTER::RDI || reg == REGISTER::RIP || reg == REGISTER::RSI || 
+            reg == REGISTER::RSP {
+            self.asm.adc_64(reg, value);
+        } else if reg == REGISTER::EAX || reg == REGISTER::EBX || reg == REGISTER::ECX || reg == REGISTER::EDX {   // 32bit Register
+            self.asm.adc_32(reg, value as u32);
+        } else if reg == REGISTER::AX || reg == REGISTER::BX || reg == REGISTER::DX {
+            self.asm.adc_16(reg, value as u16);
+        } else {
+            self.asm.adc_8(reg, value as u8);
+        }
+
+        self.add_gen();
+
+        self
+    }
+
+    /// Adds a assembly adc command which adds the registers together
+    pub fn asm_adc_reg(&mut self, dest: REGISTER, src: REGISTER) -> &mut Self {
+        self.asm.adc_reg(dest, src);
         self.add_gen();
 
         self
@@ -115,7 +146,7 @@ impl<'a> Function<'a> {
         self
     }
 
-    /*/// Adds a variable to the function
+    /// Adds a variable to the function
     pub fn create_var(&mut self, name: &'a str, typ: VarDataType) -> &mut Variabel {
         let mut adr = self.adrmng.to_owned();
 
@@ -125,7 +156,7 @@ impl<'a> Function<'a> {
         let list = self.vars.clone();
         self.vars.get_mut(list.len() -1)
             .expect("error while getting last function (CodeGenLib/x86/function.rs/121")
-    }*/
+    }
 
     /// Returns the generated code of the function
     pub fn get_gen(&self) -> Vec<u8> {

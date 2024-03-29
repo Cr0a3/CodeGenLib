@@ -706,10 +706,10 @@ impl ASMCall {
             REGISTER::EBX =>    { self.generated = vec![0xFF, 0xC3]; }, 
             REGISTER::ECX =>    { self.generated = vec![0xFF, 0xC1]; }, 
             REGISTER::EDX =>    { self.generated = vec![0xFF, 0xC2]; }, 
-            REGISTER:::AX =>    { self.generated = vec![0x66, 0xFF, 0xC0]},
-            REGISTER:::BX =>    { self.generated = vec![0x66, 0xFF, 0xC3]},
-            REGISTER:::CX =>    { self.generated = vec![0x66, 0xFF, 0xC1]},
-            REGISTER:::DX =>    { self.generated = vec![0x66, 0xFF, 0xC2]},
+            REGISTER::AX =>    { self.generated = vec![0x66, 0xFF, 0xC0]},
+            REGISTER::BX =>    { self.generated = vec![0x66, 0xFF, 0xC3]},
+            REGISTER::CX =>    { self.generated = vec![0x66, 0xFF, 0xC1]},
+            REGISTER::DX =>    { self.generated = vec![0x66, 0xFF, 0xC2]},
             REGISTER::AH =>     { self.generated = vec![0xFE, 0xC4]}, 
             REGISTER::AL =>     { self.generated = vec![0xFE, 0xC0]}, 
             REGISTER::BH =>     { self.generated = vec![0xFE, 0xC7]}, 
@@ -737,10 +737,10 @@ impl ASMCall {
             REGISTER::EBX =>    { self.generated = vec![0xFF, 0xCB]; }, 
             REGISTER::ECX =>    { self.generated = vec![0xFF, 0xC9]; }, 
             REGISTER::EDX =>    { self.generated = vec![0xFF, 0xCA]; }, 
-            REGISTER:::AX =>    { self.generated = vec![0x66, 0xFF, 0xC8]},
-            REGISTER:::BX =>    { self.generated = vec![0x66, 0xFF, 0xCB]},
-            REGISTER:::CX =>    { self.generated = vec![0x66, 0xFF, 0xC9]},
-            REGISTER:::DX =>    { self.generated = vec![0x66, 0xFF, 0xCA]},
+            REGISTER::AX =>    { self.generated = vec![0x66, 0xFF, 0xC8]},
+            REGISTER::BX =>    { self.generated = vec![0x66, 0xFF, 0xCB]},
+            REGISTER::CX =>    { self.generated = vec![0x66, 0xFF, 0xC9]},
+            REGISTER::DX =>    { self.generated = vec![0x66, 0xFF, 0xCA]},
             REGISTER::AH =>     { self.generated = vec![0xFE, 0xCC]}, 
             REGISTER::AL =>     { self.generated = vec![0xFE, 0xC8]}, 
             REGISTER::BH =>     { self.generated = vec![0xFE, 0xCF]}, 
@@ -774,7 +774,7 @@ impl ASMCall {
     
     /// Add with carry value to 64Bit register
     pub fn adc_64(&mut self, register: REGISTER, value: u64) {
-        if value > u32::MAX {
+        if value > u32::MAX as u64 {
             match register {
                 REGISTER::RAX => { 
                     let (x1, x2, x3, x4) = to_bytes_32((value - 0xffffffff) as u32);
@@ -898,16 +898,14 @@ impl ASMCall {
     /// Add with carry value to 8Bit register
     pub fn adc_8(&mut self, register: REGISTER, value: u8) {
         match register {
-            REGISTER::AH => { 
-                self.generated = vec![0x80, 0xD4, value.to_le_bytes()];
-            },
-            REGISTER::AL => { self.generated = vec![0x14, 0xFF, value.to_le_bytes()]; },
-            REGISTER::BH => { self.generated = vec![0x80, 0xD7, value.to_le_bytes()]; },
-            REGISTER::BL => { self.generated = vec![0x80, 0xD3, value.to_le_bytes()]; },
-            REGISTER::CH => { self.generated = vec![0x80, 0xD5, value.to_le_bytes()]; },
-            REGISTER::CL => { self.generated = vec![0x80, 0xD1, value.to_le_bytes()]; },
-            REGISTER::DH => { self.generated = vec![0x80, 0xD6, value.to_le_bytes()]; },
-            REGISTER::DL => { self.generated = vec![0x80, 0xD2, value.to_le_bytes()]; },
+            REGISTER::AH => { self.generated = vec![0x80, 0xD4, value.to_le_bytes()[0]]; },
+            REGISTER::AL => { self.generated = vec![0x14, 0xFF, value.to_le_bytes()[0]]; },
+            REGISTER::BH => { self.generated = vec![0x80, 0xD7, value.to_le_bytes()[0]]; },
+            REGISTER::BL => { self.generated = vec![0x80, 0xD3, value.to_le_bytes()[0]]; },
+            REGISTER::CH => { self.generated = vec![0x80, 0xD5, value.to_le_bytes()[0]]; },
+            REGISTER::CL => { self.generated = vec![0x80, 0xD1, value.to_le_bytes()[0]]; },
+            REGISTER::DH => { self.generated = vec![0x80, 0xD6, value.to_le_bytes()[0]]; },
+            REGISTER::DL => { self.generated = vec![0x80, 0xD2, value.to_le_bytes()[0]]; },
             _ => {},
         }
     }
@@ -1057,40 +1055,40 @@ impl ASMCall {
                 self.generated = gen;
             },
             REGISTER::AX => {
-                let gen match src {
+                let gen = match src {
                     REGISTER::AX => vec![0x66, 0x11, 0xC0],
                     REGISTER::BX => vec![0x66, 0x11, 0xC3],
                     REGISTER::CX => vec![0x66, 0x11, 0xC1],
                     REGISTER::DX => vec![0x66, 0x11, 0xC2],
                     _ => vec![0]
-                }
+                };
                 self.generated = gen;
             }, REGISTER::BX => {
-                let gen match src {
+                let gen = match src {
                     REGISTER::AX => vec![0x66, 0x11, 0xD8],
                     REGISTER::BX => vec![0x66, 0x11, 0xDB],
                     REGISTER::CX => vec![0x66, 0x11, 0xD9],
                     REGISTER::DX => vec![0x66, 0x11, 0xDA],
                     _ => vec![0]
-                }
+                };
                 self.generated = gen;
             }, REGISTER::CX => {
-                let gen match src {
+                let gen = match src {
                     REGISTER::AX => vec![0x66, 0x11, 0xC8],
                     REGISTER::BX => vec![0x66, 0x11, 0xCB],
                     REGISTER::CX => vec![0x66, 0x11, 0xC9],
                     REGISTER::DX => vec![0x66, 0x11, 0xCA],
                     _ => vec![0]
-                }    
+                };
                 self.generated = gen;
             }, REGISTER::DX => {
-                let gen match src {
+                let gen = match src {
                     REGISTER::AX => vec![0x66, 0x11, 0xD0],
                     REGISTER::BX => vec![0x66, 0x11, 0xD3],
                     REGISTER::CX => vec![0x66, 0x11, 0xD1],
                     REGISTER::DX => vec![0x66, 0x11, 0xD2],
                     _ => vec![0]
-                }
+                };
                 self.generated = gen;
             },
             REGISTER::AH => {
@@ -1103,7 +1101,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xE1],
                     REGISTER::DH => vec![0x10, 0xE6],
                     REGISTER::DL => vec![0x10, 0xE2],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::AL => {
                 let gen = match src {
@@ -1115,7 +1114,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xC1],
                     REGISTER::DH => vec![0x10, 0xC6],
                     REGISTER::DL => vec![0x10, 0xC2],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::BH => {
                 let gen = match src {
@@ -1127,7 +1127,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xF9],
                     REGISTER::DH => vec![0x10, 0xFE],
                     REGISTER::DL => vec![0x10, 0xFA],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::BL => {
                 let gen = match src {
@@ -1139,7 +1140,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xD9],
                     REGISTER::DH => vec![0x10, 0xDE],
                     REGISTER::DL => vec![0x10, 0xDA],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::CH => {
                 let gen = match src {
@@ -1151,7 +1153,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xE9],
                     REGISTER::DH => vec![0x10, 0xEE],
                     REGISTER::DL => vec![0x10, 0xEA],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::CL => {
                 let gen = match src {
@@ -1163,7 +1166,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xC9],
                     REGISTER::DH => vec![0x10, 0xCE],
                     REGISTER::DL => vec![0x10, 0xCA],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::DH => {
                 let gen = match src {
@@ -1175,7 +1179,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xF1],
                     REGISTER::DH => vec![0x10, 0xF6],
                     REGISTER::DL => vec![0x10, 0xF2],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, REGISTER::DL => {
                 let gen = match src {
@@ -1187,7 +1192,8 @@ impl ASMCall {
                     REGISTER::CL => vec![0x10, 0xD1],
                     REGISTER::DH => vec![0x10, 0xD6],
                     REGISTER::DL => vec![0x10, 0xD2],
-                }
+                    _ => vec![0],
+                };
                 self.generated = gen;
             }, 
 

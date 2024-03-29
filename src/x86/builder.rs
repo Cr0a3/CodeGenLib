@@ -117,7 +117,7 @@ impl<'a> Builder<'a> {
         }
 
         // optimization time
-        for func in self.functions.iter() {
+        for func in self.functions.iter_mut() {
             func.optimize();
         }
 
