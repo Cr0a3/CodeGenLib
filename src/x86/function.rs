@@ -1,5 +1,5 @@
 use super::asm::REGISTER;
-use crate::arch::{AsmCall::AsmCall, ext::I80186, ext::IShared};
+use crate::arch::{AsmCall::AsmCall, ext::AMD64};
 use super::mem::AdressManager;
 use super::var::{Variabel, VarDataType};
 

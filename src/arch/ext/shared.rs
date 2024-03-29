@@ -1,4 +1,4 @@
-use crate::x86::asm::REGISTER;
+use crate::x86::asm::{REGISTER, to_bytes_16, to_bytes_32, to_bytes_64};
 use crate::arch::AsmCall::AsmCall;
 
 pub trait IShared {
@@ -8,68 +8,98 @@ pub trait IShared {
 
     /// Decrements the register by 1
     pub fn dec(register: REGISTER) -> Vec<u8>,
+
+    /// Moves value from one register into another
+    pub fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8>,
+
+    /// Moves the value from the register to specified memory adress
+    pub fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8>,
+
+    /// Moves the value from the sepcified memory adress into the target register
+    pub fn from_memory(adress: u32, target: REGISTER) -> Vec<u8>,
+
+    /// Pushes the register onto the stack
+    pub fn push(reg: REGISTER) -> Vec<u8>,
+
+    /// Pops the register from the stack
+    pub fn pop(reg: REGISTER) -> Vec<u8>,
+
+    /// Jumps to the specifed adress
+    pub fn jmp(adress: u32) -> Vec<u8>,
+
+    /// Calls the specified adress
+    pub fn call(adress: u32) -> Vec<u8>,
+
+    /// Add with carry value to register `dest` to register `target`
+    pub fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8>,
+
+    /// Calls the adress which is stored into the register
+    pub fn call_reg(target: REGISTER) -> Vec<u8>,
+
+    /// Jumps to the adress which is stored into the register
+    pub fn jmp_reg(target: REGISTER) -> Vec<u8>
 }
 
 impl IShared for AsmCall {
     /// Inecrements the register by 1
-    pub fn inc(register: REGISTER) {
+    pub fn inc(register: REGISTER) -> Vec<u8> {
         match register {
-            REGISTER::RCX =>    { vec![0x48, 0xFF, 0xC1]    }, 
-            REGISTER::RDX =>    { vec![0x48, 0xFF, 0xC2]    },
-            REGISTER::RBX =>    { vec![0x48, 0xFF, 0xC3]    }, 
-            REGISTER::RAX =>    { vec![0x48, 0xFF, 0xC0]    }, 
-            REGISTER::EAX =>    { vec![0xFF, 0xC0]          }, 
-            REGISTER::EBX =>    { vec![0xFF, 0xC3]          }, 
-            REGISTER::ECX =>    { vec![0xFF, 0xC1]          }, 
-            REGISTER::EDX =>    { vec![0xFF, 0xC2]          }, 
-            REGISTER::AX =>     { vec![0x66, 0xFF, 0xC0]    },
-            REGISTER::BX =>     { vec![0x66, 0xFF, 0xC3]    },
-            REGISTER::CX =>     { vec![0x66, 0xFF, 0xC1]    },
-            REGISTER::DX =>     { vec![0x66, 0xFF, 0xC2]    },
-            REGISTER::AH =>     { vec![0xFE, 0xC4]          }, 
-            REGISTER::AL =>     { vec![0xFE, 0xC0]          }, 
-            REGISTER::BH =>     { vec![0xFE, 0xC7]          }, 
-            REGISTER::BL =>     { vec![0xFE, 0xC3]          }, 
-            REGISTER::CH =>     { vec![0xFE, 0xC5]          }, 
-            REGISTER::CL =>     { vec![0xFE, 0xC1]          }, 
-            REGISTER::DH =>     { vec![0xFE, 0xC6]          }, 
-            REGISTER::DL =>     { vec![0xFE, 0xC2]          },
-            REGISTER::RSI =>    { vec![0x48, 0xFF, 0xC6]    }, 
-            REGISTER::RDI =>    { vec![0x48, 0xFF, 0xC7]    }, 
-            REGISTER::RBP =>    { vec![0x48, 0xFF, 0xC5]    },
-            REGISTER::RSP =>    { vec![0x48, 0xFF, 0xC5]    },
-            _ => {}
+            REGISTER::RCX =>    vec![0x48, 0xFF, 0xC1],  
+            REGISTER::RDX =>    vec![0x48, 0xFF, 0xC2], 
+            REGISTER::RBX =>    vec![0x48, 0xFF, 0xC3],  
+            REGISTER::RAX =>    vec![0x48, 0xFF, 0xC0],  
+            REGISTER::EAX =>    vec![0xFF, 0xC0],  
+            REGISTER::EBX =>    vec![0xFF, 0xC3],  
+            REGISTER::ECX =>    vec![0xFF, 0xC1],  
+            REGISTER::EDX =>    vec![0xFF, 0xC2],  
+            REGISTER::AX =>     vec![0x66, 0xFF, 0xC0], 
+            REGISTER::BX =>     vec![0x66, 0xFF, 0xC3], 
+            REGISTER::CX =>     vec![0x66, 0xFF, 0xC1], 
+            REGISTER::DX =>     vec![0x66, 0xFF, 0xC2], 
+            REGISTER::AH =>     vec![0xFE, 0xC4],  
+            REGISTER::AL =>     vec![0xFE, 0xC0],  
+            REGISTER::BH =>     vec![0xFE, 0xC7],  
+            REGISTER::BL =>     vec![0xFE, 0xC3],  
+            REGISTER::CH =>     vec![0xFE, 0xC5],  
+            REGISTER::CL =>     vec![0xFE, 0xC1],  
+            REGISTER::DH =>     vec![0xFE, 0xC6],  
+            REGISTER::DL =>     vec![0xFE, 0xC2], 
+            REGISTER::RSI =>    vec![0x48, 0xFF, 0xC6],  
+            REGISTER::RDI =>    vec![0x48, 0xFF, 0xC7],  
+            REGISTER::RBP =>    vec![0x48, 0xFF, 0xC5], 
+            REGISTER::RSP =>    vec![0x48, 0xFF, 0xC5], 
+            _ => vec![0x00]
         }
     }
 
     /// Decrements the register by 1
-    pub fn dec(register: REGISTER) {
+    pub fn dec(register: REGISTER) -> Vec<u8> {
         match register {
-            REGISTER::RAX =>    { vec![0x48, 0xFF, 0xC8]     }, 
-            REGISTER::RBX =>    { vec![0x48, 0xFF, 0xCB]     }, 
-            REGISTER::RCX =>    { vec![0x48, 0xFF, 0xC9]     }, 
-            REGISTER::RDX =>    { vec![0x48, 0xFF, 0xCA]     },
-            REGISTER::EAX =>    { vec![0xFF, 0xC8]           }, 
-            REGISTER::EBX =>    { vec![0xFF, 0xCB]           }, 
-            REGISTER::ECX =>    { vec![0xFF, 0xC9]           }, 
-            REGISTER::EDX =>    { vec![0xFF, 0xCA]           }, 
-            REGISTER::AX =>     { vec![0x66, 0xFF, 0xC8]    },
-            REGISTER::BX =>     { vec![0x66, 0xFF, 0xCB]    },
-            REGISTER::CX =>     { vec![0x66, 0xFF, 0xC9]    },
-            REGISTER::DX =>     { vec![0x66, 0xFF, 0xCA]    },
-            REGISTER::AH =>     { vec![0xFE, 0xCC]          }, 
-            REGISTER::AL =>     { vec![0xFE, 0xC8]          }, 
-            REGISTER::BH =>     { vec![0xFE, 0xCF]          }, 
-            REGISTER::BL =>     { vec![0xFE, 0xCB]          }, 
-            REGISTER::CH =>     { vec![0xFE, 0xCD]          }, 
-            REGISTER::CL =>     { vec![0xFE, 0xC9]          }, 
-            REGISTER::DH =>     { vec![0xFE, 0xCE]          }, 
-            REGISTER::DL =>     { vec![0xFE, 0xCA]          },
-            REGISTER::RSI =>    { vec![0x48, 0xFF, 0xCE]    }, 
-            REGISTER::RDI =>    { vec![0x48, 0xFF, 0xCF]    }, 
-            REGISTER::RBP =>    { vec![0x48, 0xFF, 0xCD]    },
-            REGISTER::RSP =>    { vec![0x48, 0xFF, 0xCC]    },
-            _ => {}
+            REGISTER::RAX =>   vec![0x48, 0xFF, 0xC8],  
+            REGISTER::RBX =>   vec![0x48, 0xFF, 0xCB],  
+            REGISTER::RCX =>   vec![0x48, 0xFF, 0xC9],  
+            REGISTER::RDX =>   vec![0x48, 0xFF, 0xCA], 
+            REGISTER::EAX =>   vec![0xFF, 0xC8],         
+            REGISTER::EBX =>   vec![0xFF, 0xCB],         
+            REGISTER::ECX =>   vec![0xFF, 0xC9],         
+            REGISTER::EDX =>   vec![0xFF, 0xCA],         
+            REGISTER::AX =>    vec![0x66, 0xFF, 0xC8], 
+            REGISTER::BX =>    vec![0x66, 0xFF, 0xCB], 
+            REGISTER::CX =>    vec![0x66, 0xFF, 0xC9], 
+            REGISTER::DX =>    vec![0x66, 0xFF, 0xCA], 
+            REGISTER::AH =>    vec![0xFE, 0xCC],        
+            REGISTER::AL =>    vec![0xFE, 0xC8],        
+            REGISTER::BH =>    vec![0xFE, 0xCF],        
+            REGISTER::BL =>    vec![0xFE, 0xCB],         
+            REGISTER::CH =>    vec![0xFE, 0xCD],         
+            REGISTER::CL =>    vec![0xFE, 0xC9],         
+            REGISTER::DH =>    vec![0xFE, 0xCE],         
+            REGISTER::DL =>    vec![0xFE, 0xCA],        
+            REGISTER::RSI =>   vec![0x48, 0xFF, 0xCE],
+            REGISTER::RDI =>   vec![0x48, 0xFF, 0xCF],   
+            REGISTER::RBP =>   vec![0x48, 0xFF, 0xCD],
+            REGISTER::RSP =>   vec![0x48, 0xFF, 0xCC],  
+            _ => vec![0x00]
         }
     }
 
@@ -356,12 +386,12 @@ impl IShared for AsmCall {
                     _ => vec![0x00],
                 }
             }
-            _ => {}
+            _ => vec![0x00]
         }
     }
 
     /// Moves the value from the register to specified memory adress
-    pub fn to_memory(&mut self, adress: u64, target: REGISTER) {
+    pub fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::EAX => {
                 let (x1, x2, x3, x4) = to_bytes_32(adress as u32);
@@ -490,45 +520,45 @@ impl IShared for AsmCall {
                 let (x1, x2, x3, x4) = to_bytes_32(adress);
                 vec![0x8a, 0x15, x1, x2, x3, x4]
             },
-            _ => {}
+            _ => vec![0x00]
         }
     }
 
     /// Pushes the register onto the stack
     pub fn push(reg: REGISTER) -> Vec<u8> {
         match reg {
-            REGISTER::AX  =>    {   vec![0x66, 0x50]  }
-            REGISTER::CX  =>    {   vec![0x66, 0x51]  }
-            REGISTER::DX  =>    {   vec![0x66, 0x52]  }
-            REGISTER::BX  =>    {   vec![0x66, 0x53]  }
-            REGISTER::RAX =>    {   vec![0x50]        }
-            REGISTER::RBX =>    {   vec![0x53]        }
-            REGISTER::RCX =>    {   vec![0x51]        }
-            REGISTER::RDX =>    {   vec![0x52]        }
-            REGISTER::RSI =>    {   vec![0x56]        }
-            REGISTER::RDI =>    {   vec![0x57]        }
-            REGISTER::RBP =>    {   vec![0x55]        }
-            REGISTER::RSP =>    {   vec![0x54]        }
-            _ => {}
+            REGISTER::AX  => vec![0x66, 0x50],
+            REGISTER::CX  => vec![0x66, 0x51],
+            REGISTER::DX  => vec![0x66, 0x52],
+            REGISTER::BX  => vec![0x66, 0x53],
+            REGISTER::RAX => vec![0x50],      
+            REGISTER::RBX => vec![0x53],      
+            REGISTER::RCX => vec![0x51],      
+            REGISTER::RDX => vec![0x52],      
+            REGISTER::RSI => vec![0x56],      
+            REGISTER::RDI => vec![0x57],      
+            REGISTER::RBP => vec![0x55],      
+            REGISTER::RSP => vec![0x54],      
+            _ => vec![0x00]
         }
     }
 
     /// Pops the register from the stack
     pub fn pop(reg: REGISTER) -> Vec<u8> {
         match reg {
-            REGISTER::AX =>     {   vec![0x66, 0x58] }
-            REGISTER::CX =>     {   vec![0x66, 0x59] }
-            REGISTER::DX =>     {   vec![0x66, 0x5a] }
-            REGISTER::BX =>     {   vec![0x66, 0x5b] }
-            REGISTER::RAX =>    {   vec![0x58]        }
-            REGISTER::RBX =>    {   vec![0x59]        }
-            REGISTER::RCX =>    {   vec![0x5b]        }
-            REGISTER::RDX =>    {   vec![0x5a]        }
-            REGISTER::RSI =>    {   vec![0x5e]        }
-            REGISTER::RDI =>    {   vec![0x5f]        }
-            REGISTER::RBP =>    {   vec![0x5d]        }
-            REGISTER::RSP =>    {   vec![0x5c]        }
-            _ => {},
+            REGISTER::AX =>     vec![0x66, 0x58], 
+            REGISTER::CX =>     vec![0x66, 0x59], 
+            REGISTER::DX =>     vec![0x66, 0x5a], 
+            REGISTER::BX =>     vec![0x66, 0x5b], 
+            REGISTER::RAX =>    vec![0x58],
+            REGISTER::RBX =>    vec![0x59],
+            REGISTER::RCX =>    vec![0x5b],
+            REGISTER::RDX =>    vec![0x5a],
+            REGISTER::RSI =>    vec![0x5e],
+            REGISTER::RDI =>    vec![0x5f],
+            REGISTER::RBP =>    vec![0x5d],
+            REGISTER::RSP =>    vec![0x5c],
+            _ => vec![0x00],
         }
     }
 
@@ -542,5 +572,302 @@ impl IShared for AsmCall {
     pub fn call(adress: u32) -> Vec<u8> {
         let (x1, x2, x3, x4) = to_bytes_32(adress);
         vec![0xe8, x1, x2, x3, x4]
+    }
+
+    /// Add with carry value to register `dest` to register `target`
+    pub fn adc_reg(dest: REGISTER, src: REGISTER) -> Vec<u8> {
+        match dest {
+            REGISTER::RAX => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xC0],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xC3],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xC1],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xC2],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xC5],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xC6],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xC7],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xC4],
+                    _ => vec![0]
+                }
+            }, REGISTER::RBX => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xD8],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xDB],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xD9],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xDA],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xDD],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xDE],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xDF],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xDC],
+                    _ => vec![0]
+                }
+            }, REGISTER::RCX => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xC8],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xCB],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xC9],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xCA],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xCD],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xCE],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xCF],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xCC],
+                    _ => vec![0]
+                }
+            }, REGISTER::RDX => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xD0],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xD3],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xD1],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xD2],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xD5],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xD6],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xD7],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xD4],
+                    _ => vec![0]
+                }
+            }, REGISTER::RSI => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xF0],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xF3],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xF1],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xF2],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xF5],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xF6],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xF7],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xF4],
+                    _ => vec![0]
+                }
+            }, REGISTER::RDI => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xF8],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xFB],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xF9],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xFA],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xFD],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xFE],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xFF],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xFC],
+                    _ => vec![0]
+                }
+            }, REGISTER::RBP => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xEA],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xEB],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xE9],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xEA],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xED],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xEE],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xEF],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xEC],
+                    _ => vec![0]
+                }
+            }, REGISTER::RSP => { 
+                match src {
+                    REGISTER::RAX => vec![0x48, 0x11, 0xE0],
+                    REGISTER::RBX => vec![0x48, 0x11, 0xE3],
+                    REGISTER::RCX => vec![0x48, 0x11, 0xE1],
+                    REGISTER::RDX => vec![0x48, 0x11, 0xE2],
+                    REGISTER::RBP => vec![0x48, 0x11, 0xE5],
+                    REGISTER::RSI => vec![0x48, 0x11, 0xE6],
+                    REGISTER::RDI => vec![0x48, 0x11, 0xE7],
+                    REGISTER::RSP => vec![0x48, 0x11, 0xE4],
+                    _ => vec![0]
+                }
+            }, REGISTER::EAX => { 
+                match src {
+                    REGISTER::EAX => vec![0x11, 0xC0], 
+                    REGISTER::EBX => vec![0x11, 0xC3], 
+                    REGISTER::ECX => vec![0x11, 0xC1], 
+                    REGISTER::EDX => vec![0x11, 0xC2],
+                    _ => vec![0]
+                }
+            }, REGISTER::EBX => { 
+                match src {
+                    REGISTER::EAX => vec![0x11, 0xD8], 
+                    REGISTER::EBX => vec![0x11, 0xDA], 
+                    REGISTER::ECX => vec![0x11, 0xD9], 
+                    REGISTER::EDX => vec![0x11, 0xDA],
+                    _ => vec![0]
+                }
+            }, REGISTER::ECX => { 
+                match src {
+                    REGISTER::EAX => vec![0x11, 0xC8], 
+                    REGISTER::EBX => vec![0x11, 0xCB], 
+                    REGISTER::ECX => vec![0x11, 0xC9], 
+                    REGISTER::EDX => vec![0x11, 0xCA],
+                    _ => vec![0]
+                }
+            }, REGISTER::EDX => { 
+                match src {
+                    REGISTER::EAX => vec![0x11, 0xD0], 
+                    REGISTER::EBX => vec![0x11, 0xD3], 
+                    REGISTER::ECX => vec![0x11, 0xD1], 
+                    REGISTER::EDX => vec![0x11, 0xD2],
+                    _ => vec![0]
+                }
+            },
+            REGISTER::AX => {
+                match src {
+                    REGISTER::AX => vec![0x66, 0x11, 0xC0],
+                    REGISTER::BX => vec![0x66, 0x11, 0xC3],
+                    REGISTER::CX => vec![0x66, 0x11, 0xC1],
+                    REGISTER::DX => vec![0x66, 0x11, 0xC2],
+                    _ => vec![0]
+                }
+            }, REGISTER::BX => {
+                match src {
+                    REGISTER::AX => vec![0x66, 0x11, 0xD8],
+                    REGISTER::BX => vec![0x66, 0x11, 0xDB],
+                    REGISTER::CX => vec![0x66, 0x11, 0xD9],
+                    REGISTER::DX => vec![0x66, 0x11, 0xDA],
+                    _ => vec![0]
+                }
+            }, REGISTER::CX => {
+                match src {
+                    REGISTER::AX => vec![0x66, 0x11, 0xC8],
+                    REGISTER::BX => vec![0x66, 0x11, 0xCB],
+                    REGISTER::CX => vec![0x66, 0x11, 0xC9],
+                    REGISTER::DX => vec![0x66, 0x11, 0xCA],
+                    _ => vec![0]
+                }
+            }, REGISTER::DX => {
+                match src {
+                    REGISTER::AX => vec![0x66, 0x11, 0xD0],
+                    REGISTER::BX => vec![0x66, 0x11, 0xD3],
+                    REGISTER::CX => vec![0x66, 0x11, 0xD1],
+                    REGISTER::DX => vec![0x66, 0x11, 0xD2],
+                    _ => vec![0]
+                }
+            },
+            REGISTER::AH => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xE4],
+                    REGISTER::AL => vec![0x10, 0xE0],
+                    REGISTER::BH => vec![0x10, 0xE7],
+                    REGISTER::BL => vec![0x10, 0xE3],
+                    REGISTER::CH => vec![0x10, 0xE5],
+                    REGISTER::CL => vec![0x10, 0xE1],
+                    REGISTER::DH => vec![0x10, 0xE6],
+                    REGISTER::DL => vec![0x10, 0xE2],
+                    _ => vec![0],
+                }
+            }, REGISTER::AL => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xC4],
+                    REGISTER::AL => vec![0x10, 0xC0],
+                    REGISTER::BH => vec![0x10, 0xC7],
+                    REGISTER::BL => vec![0x10, 0xC3],
+                    REGISTER::CH => vec![0x10, 0xC5],
+                    REGISTER::CL => vec![0x10, 0xC1],
+                    REGISTER::DH => vec![0x10, 0xC6],
+                    REGISTER::DL => vec![0x10, 0xC2],
+                    _ => vec![0],
+                }
+            }, REGISTER::BH => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xFC],
+                    REGISTER::AL => vec![0x10, 0xF8],
+                    REGISTER::BH => vec![0x10, 0xFF],
+                    REGISTER::BL => vec![0x10, 0xFB],
+                    REGISTER::CH => vec![0x10, 0xFD],
+                    REGISTER::CL => vec![0x10, 0xF9],
+                    REGISTER::DH => vec![0x10, 0xFE],
+                    REGISTER::DL => vec![0x10, 0xFA],
+                    _ => vec![0],
+                }
+            }, REGISTER::BL => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xDC],
+                    REGISTER::AL => vec![0x10, 0xD8],
+                    REGISTER::BH => vec![0x10, 0xDF],
+                    REGISTER::BL => vec![0x10, 0xDB],
+                    REGISTER::CH => vec![0x10, 0xDD],
+                    REGISTER::CL => vec![0x10, 0xD9],
+                    REGISTER::DH => vec![0x10, 0xDE],
+                    REGISTER::DL => vec![0x10, 0xDA],
+                    _ => vec![0],
+                }
+            }, REGISTER::CH => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xEC],
+                    REGISTER::AL => vec![0x10, 0xE8],
+                    REGISTER::BH => vec![0x10, 0xEF],
+                    REGISTER::BL => vec![0x10, 0xEB],
+                    REGISTER::CH => vec![0x10, 0xED],
+                    REGISTER::CL => vec![0x10, 0xE9],
+                    REGISTER::DH => vec![0x10, 0xEE],
+                    REGISTER::DL => vec![0x10, 0xEA],
+                    _ => vec![0],
+                }
+            }, REGISTER::CL => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xCC],
+                    REGISTER::AL => vec![0x10, 0xC8],
+                    REGISTER::BH => vec![0x10, 0xCF],
+                    REGISTER::BL => vec![0x10, 0xCB],
+                    REGISTER::CH => vec![0x10, 0xCD],
+                    REGISTER::CL => vec![0x10, 0xC9],
+                    REGISTER::DH => vec![0x10, 0xCE],
+                    REGISTER::DL => vec![0x10, 0xCA],
+                    _ => vec![0],
+                }
+            }, REGISTER::DH => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xF4],
+                    REGISTER::AL => vec![0x10, 0xF0],
+                    REGISTER::BH => vec![0x10, 0xF7],
+                    REGISTER::BL => vec![0x10, 0xF3],
+                    REGISTER::CH => vec![0x10, 0xF5],
+                    REGISTER::CL => vec![0x10, 0xF1],
+                    REGISTER::DH => vec![0x10, 0xF6],
+                    REGISTER::DL => vec![0x10, 0xF2],
+                    _ => vec![0],
+                }
+            }, REGISTER::DL => {
+                match src {
+                    REGISTER::AH => vec![0x10, 0xD4],
+                    REGISTER::AL => vec![0x10, 0xD0],
+                    REGISTER::BH => vec![0x10, 0xD7],
+                    REGISTER::BL => vec![0x10, 0xD3],
+                    REGISTER::CH => vec![0x10, 0xD5],
+                    REGISTER::CL => vec![0x10, 0xD1],
+                    REGISTER::DH => vec![0x10, 0xD6],
+                    REGISTER::DL => vec![0x10, 0xD2],
+                    _ => vec![0],
+                }
+            }, 
+
+            _ => vec![0x00],
+        }
+    }
+
+    /// Calls the adress which is stored into the register
+    pub fn call_reg(target: REGISTER) -> Vec<u8> {
+        match target {
+            REGISTER::RAX => { vec![0xFF, 0xD0] }
+            REGISTER::RBX => { vec![0xFF, 0xD3] }
+            REGISTER::RCX => { vec![0xFF, 0xD1] }
+            REGISTER::RDX => { vec![0xFF, 0xD2] }
+            REGISTER::RSI => { vec![0xFF, 0xD6] }
+            REGISTER::RDI => { vec![0xFF, 0xD7] }
+            REGISTER::RBP => { vec![0xFF, 0xD5] }
+            REGISTER::RSP => { vec![0xFF, 0xD4] }
+            _ => vec![0x00],
+        }
+    }
+
+    /// Jumps to the adress which is stored into the register
+    pub fn jmp_reg(target: REGISTER) -> Vec<u8> {
+        match target {
+            REGISTER::RAX => { vec![0xFF, 0xE0] }
+            REGISTER::RBX => { vec![0xFF, 0xE3] }
+            REGISTER::RCX => { vec![0xFF, 0xE1] }
+            REGISTER::RDX => { vec![0xFF, 0xE2] }
+            REGISTER::RSI => { vec![0xFF, 0xE6] }
+            REGISTER::RDI => { vec![0xFF, 0xE7] }
+            REGISTER::RBP => { vec![0xFF, 0xE5] }
+            REGISTER::RSP => { vec![0xFF, 0xE4] }
+            _ => vec![0x00],
+        }
     }
 }

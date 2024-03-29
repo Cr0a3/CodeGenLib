@@ -1,4 +1,5 @@
 use crate::x86::asm::{REGISTER, to_bytes_16, to_bytes_32, to_bytes_64};
+use crate::arch::AsmCall::AsmCall;
 
 pub trait I8086 {
     /// Add with carry value to 8Bit register

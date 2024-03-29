@@ -22,6 +22,7 @@ pub fn all(arch: Arch) -> Vec<Extension> {
 }
 
 pub mod I80186;
+pub mod I80386;
 pub mod shared;
 
-pub use shared::IShared as IShared;
+pub trait AMD64: shared::IShared + I80186::I80186 + I80386::I80386 {}
