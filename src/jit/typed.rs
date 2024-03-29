@@ -4,7 +4,6 @@
 use crate::asm::ASMCall;
 use crate::x86::function::Function;
 use crate::{Result, CodeGenLibError};
-use super::macros::jit_func;
 
 pub trait JitRuntime {
     /// Returns the function

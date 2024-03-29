@@ -1,4 +1,5 @@
-use super::asm::{ASMCall, REGISTER};
+use super::asm::REGISTER;
+use crate::arch::{AsmCall::AsmCall, ext::I80186, ext::IShared};
 use super::mem::AdressManager;
 use super::var::{Variabel, VarDataType};
 
@@ -7,7 +8,7 @@ use super::var::{Variabel, VarDataType};
 pub struct Function<'a> {
     pub name: String,
     pub gen: Vec<u8>,
-    asm: ASMCall,
+    asm: AsmCall,
     pos: usize,
 
     pub esymbols: Vec<ExternSymbol>,
@@ -18,7 +19,7 @@ pub struct Function<'a> {
 
 impl<'a> Function<'a> {
     pub fn new(name: &'a str, adrmng: &'a mut AdressManager) -> Function<'a> {
-        let mut asm = ASMCall::new();
+        let mut asm = AsmCall::new();
         let mut gen = vec![];
         asm.endbr64();
         for b in asm.generated.clone() { gen.push(b) }

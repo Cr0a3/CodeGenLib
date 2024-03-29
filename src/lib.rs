@@ -27,6 +27,7 @@
 pub mod x86;
 pub mod opt;
 pub mod error;
+pub mod arch;
 #[cfg(feature = "jit")]
 pub mod jit;
 
@@ -37,6 +38,8 @@ pub use x86::mem::AdressManager as AdressManager;
 pub use opt::optimize::Optimize as OptimizeTrait;
 pub use error::Result as Result;
 pub use error::CodeGenLibError as CodeGenLibError;
+pub use arch::def::Arch as Arch;
+pub use arch::ext::all as AllExtensions;
 
 #[cfg(feature = "jit")]
 pub use jit::typed::JitRuntime as Jit;
