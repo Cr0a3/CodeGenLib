@@ -13,7 +13,7 @@ pub trait IShared {
      fn mov_reg(target: REGISTER, source: REGISTER) -> Vec<u8>;
 
     /// Moves the value from the register to specified memory adress
-     fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8>;
+     fn to_memory(adress: u64, target: REGISTER) -> Vec<u8>;
 
     /// Moves the value from the sepcified memory adress into the target register
      fn from_memory(adress: u32, target: REGISTER) -> Vec<u8>;
@@ -394,7 +394,7 @@ impl IShared for AsmCall {
     }
 
     /// Moves the value from the register to specified memory adress
-     fn to_memory(&mut self, adress: u64, target: REGISTER) -> Vec<u8> {
+     fn to_memory(adress: u64, target: REGISTER) -> Vec<u8> {
         match target {
             REGISTER::EAX => {
                 let (x1, x2, x3, x4) = to_bytes_32(adress as u32);
