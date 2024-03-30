@@ -21,7 +21,6 @@
 //! The examples would make a elf file with a function named call wich just calls 
 //! a function named callme and then returns a 1  
 
-
 #![allow(non_snake_case)]
 
 pub mod x86;

@@ -6,7 +6,7 @@ use super::var::{Variabel, VarDataType};
 
 /// The Function class is a handler for the code generation of one function
 #[derive(Clone)]   
-pub struct Function<'a> {
+pub struct Function<'b> {
     pub name: String,
     pub gen: Vec<Vec<u8>>,
     pos: usize,
@@ -14,11 +14,11 @@ pub struct Function<'a> {
     pub esymbols: Vec<ExternSymbol>,
     pub vars: Vec<Variabel>,
 
-    adrmng: &'a AdressManager,
+    adrmng: &'b AdressManager,
 }
 
-impl<'a> Function<'a> {
-    pub fn new(name: &str, adrmng: &'a mut AdressManager) -> Function<'a> {
+impl<'b> Function<'b> {
+    pub fn new(name: &str, adrmng: &'b mut AdressManager) -> Function<'b> {
         let mut gen = vec![];
         gen.push( asm::endbr64() );
         gen.push( asm::push(REGISTER::RBP) );
@@ -126,7 +126,7 @@ impl<'a> Function<'a> {
     }
 
     /// Adds a variable to the function
-    pub fn create_var(&mut self, name: &'a str, typ: VarDataType) -> Variabel {
+    pub fn create_var(&mut self, name: &'b str, typ: VarDataType) -> Variabel {
         let var = Variabel::new(typ, &name.to_string(), self.adrmng);
         self.vars.push(var);
 

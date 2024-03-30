@@ -10,6 +10,7 @@ use crate::OptimizeTrait;
 /// `Function`, `StaticValue`, `ExternFunction`, `AdressManager`
 /// 
 /// It also create the object file via the `faerie` crate
+#[derive(Clone)]
 pub struct Builder<'a> {
     functions: Vec<Function<'a>>,
     statics: Vec<StaticValue>,
@@ -44,12 +45,12 @@ impl<'a> Builder<'a> {
     /// `name`   - name of the static value
     /// <br>
     /// `global` - import/export from/to other file 
-    pub fn add_static(&mut self, name: &str, global: bool) -> &mut StaticValue {
+    pub fn add_static(&mut self, name: &str, global: bool) -> StaticValue {
         let stat = StaticValue::new(name, global);
         self.statics.push( stat );
         let list = self.statics.clone();
         self.statics.get_mut(list.len() -1)
-            .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47")
+            .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47").to_owned()
     }
     
     /// Adds function import from another file
@@ -59,13 +60,6 @@ impl<'a> Builder<'a> {
         let list = self.externs.clone();
         self.externs.get_mut(list.len() -1)
         .expect("error while getting last function (CodeGenLib/x86/builder.rs/53")
-    }
-
-    /// Optimizes all functions of the builder
-    pub fn optimize(&mut self) {
-        for func in self.functions.iter_mut() {
-            func.optimize();
-        }
     }
 
     /// Builds all functions, symbols, etc into one
@@ -122,7 +116,9 @@ impl<'a> Builder<'a> {
 
         }
 
-        self.optimize();
+        for func in self.functions.iter_mut() {
+            func.optimize();
+        }
 
         obj.write(file)?;
 
