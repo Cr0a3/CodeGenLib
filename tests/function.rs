@@ -1,6 +1,6 @@
 //! All tests of struct Function
 
-use crate::{Function, AdressManager};
+use CodeGenLib::{Function, AdressManager};
 
 #[test]
 fn function_ret_codegen() {
@@ -17,5 +17,5 @@ fn function_ret_codegen() {
         0xc3,                   //  ret
     ];
 
-    assert_eq!(expected_gen, func.gen);
+    assert_eq!(expected_gen, func.get_gen());
 }

@@ -5,7 +5,6 @@ use super::{function::*, staticv::*};
 use super::mem::AdressManager;
 use crate::OptimizeTrait;
 
-
 /// The builder is a wrapper around the entire code generation
 /// via the classes: <br>
 /// `Function`, `StaticValue`, `ExternFunction`, `AdressManager`
@@ -32,12 +31,12 @@ impl<'a> Builder<'a> {
 
     /// Adds a new global function with the name `name`
     /// To the builder
-    pub fn add_function(&mut self, name: &'a str) -> &'a mut Function {
+    pub fn add_function(&mut self, name: &str) -> &'a mut Function {
         let func = Function::new(name, &mut self.mem);
         self.functions.push( func );
         let list = self.functions.clone();
         self.functions.get_mut(list.len() -1)
-            .expect("error while getting last function (CodeGenLib/x86/builder.rs/41")
+            .expect("error while getting last function (CodeGenLib/x86/builder.rs/39")
     }
 
     /// Adds referenc to static value to the builder.
@@ -60,6 +59,13 @@ impl<'a> Builder<'a> {
         let list = self.externs.clone();
         self.externs.get_mut(list.len() -1)
         .expect("error while getting last function (CodeGenLib/x86/builder.rs/53")
+    }
+
+    /// Optimizes all functions of the builder
+    pub fn optimize(&mut self) {
+        for func in self.functions.iter_mut() {
+            func.optimize();
+        }
     }
 
     /// Builds all functions, symbols, etc into one
@@ -116,10 +122,7 @@ impl<'a> Builder<'a> {
 
         }
 
-        // optimization time
-        for func in self.functions.iter_mut() {
-            func.optimize();
-        }
+        self.optimize();
 
         obj.write(file)?;
 

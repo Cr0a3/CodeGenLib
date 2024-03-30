@@ -1,4 +1,4 @@
-use crate::{Function, Jit, AdressManager, Result};
+use CodeGenLib::{Function, Jit, AdressManager, Result};
 
 #[test]
 pub fn jit_sum() -> Result<()> {

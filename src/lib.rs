@@ -39,7 +39,6 @@ pub use opt::optimize::Optimize as OptimizeTrait;
 pub use error::Result as Result;
 pub use error::CodeGenLibError as CodeGenLibError;
 pub use arch::def::Arch as Arch;
-pub use arch::ext::all as AllExtensions;
 
 #[cfg(feature = "jit")]
 pub use jit::typed::JitRuntime as Jit;

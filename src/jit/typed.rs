@@ -1,26 +1,24 @@
 //! <h4>Jit execution</h4>
 //! With this module you can jit execute a function
 
-use crate::asm::ASMCall;
-use crate::arch::ext::*;
+use crate::arch::AsmCall::AsmCall as asm;
+use crate::arch::ext::AMD64::*;
 use crate::x86::function::Function;
 use crate::{Result, CodeGenLibError};
 
 pub trait JitRuntime {
     /// Returns the function
-    fn typed<T, X>(&mut self) -> Result<extern "C" fn() -> X>;
+    unsafe fn typed<T, X>(&mut self) -> Result<extern "C" fn() -> X>;
 }
 
 impl<'a> JitRuntime for Function<'a> {
     /// Tr
-    fn typed<Params, Ret>(&mut self) -> Result<extern "C"  fn() -> Ret> {
+    unsafe fn typed<Params, Ret>(&mut self) -> Result<extern "C"  fn() -> Ret> {
         let func_ptr: extern "C" fn() -> Ret = unsafe {
             std::mem::transmute(self.gen.as_ptr())
         };
 
-        let asm = AsmCall {};
-
-        if self.gen[0] == asm::endbr4() {
+        if self.gen[0] == asm::endbr64() {
             self.gen.remove(0);
         }
 
