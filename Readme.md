@@ -11,9 +11,9 @@ use CodeGenLib::{Builder, ArtifactError};
 pub fn main() -> Result<(), ArtifactError>{
     let mut builder = Builder::new();
 
-    builder.add_function("call")
-        .call("callme")
-        .ret_int(5);
+    let func = builder.add_function("call");
+    func.call("callme")
+    func.ret_int(5);
 
     builder.build("test.o")?;
 
@@ -22,7 +22,7 @@ pub fn main() -> Result<(), ArtifactError>{
 ```
 
 ## Documentation
-Check out our documentation on https://docs.rs/CodeGenLib
+Check out our documentation on https://docs.rs/CodeGenLib/latest/CodeGenLib/
 
 ## Copyright
 Copyright (C) 2024 Cr0a3

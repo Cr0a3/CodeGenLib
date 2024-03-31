@@ -5,7 +5,7 @@ edition = "2021"
 description = "A libary to generate AMD64 machine code (like LLVM)"
 reposentory = "https://github.com/Toni-Graphics/CodeGenLib"
 keywords = ["codegen", "AMD64", x64", "compiler"]
-documentation = "https://docs.rs/CodeGenLib"
+documentation = "https://docs.rs/CodeGenLib/latest/CodeGenLib/"
 categories = ["development-tools::ffi"] 
 license = "MPL-2.0"
 
