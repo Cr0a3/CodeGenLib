@@ -6,7 +6,7 @@ use super::var::{Variabel, VarDataType};
 
 /// The Function class is a handler for the code generation of one function
 #[derive(Clone)]   
-pub struct Function<'b> {
+pub struct Function {
     pub name: String,
     pub gen: Vec<Vec<u8>>,
     pos: usize,
@@ -14,11 +14,11 @@ pub struct Function<'b> {
     pub esymbols: Vec<ExternSymbol>,
     pub vars: Vec<Variabel>,
 
-    adrmng: &'b AdressManager,
+    adrmng: AdressManager,
 }
 
-impl<'b> Function<'b> {
-    pub fn new(name: &str, adrmng: &'b mut AdressManager) -> Function<'b> {
+impl Function {
+    pub fn new(name: &str, adrmng: &mut AdressManager) -> Function {
         let mut gen = vec![];
         gen.push( asm::endbr64() );
         gen.push( asm::push(REGISTER::RBP) );
@@ -30,7 +30,7 @@ impl<'b> Function<'b> {
             pos: gen.len() - 1,
             esymbols: vec![],
             vars: vec![],
-            adrmng: adrmng,
+            adrmng: adrmng.to_owned(),
         }
     }
 
@@ -126,8 +126,8 @@ impl<'b> Function<'b> {
     }
 
     /// Adds a variable to the function
-    pub fn create_var(&mut self, name: &'b str, typ: VarDataType) -> Variabel {
-        let var = Variabel::new(typ, &name.to_string(), self.adrmng);
+    pub fn create_var(&mut self, name: & str, typ: VarDataType) -> Variabel {
+        let var = Variabel::new(typ, &name.to_string(), &self.adrmng);
         self.vars.push(var);
 
        self.get_last_var()
@@ -140,7 +140,7 @@ impl<'b> Function<'b> {
     }
 
     /// Returns the generated code of the function
-    pub fn get_gen(&self) -> Vec<u8> {
+    pub fn get_gen(&mut self) -> Vec<u8> {
         let mut out: Vec<u8> = vec![];
         for v in self.gen.iter() {
             for b in v {

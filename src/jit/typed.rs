@@ -11,16 +11,12 @@ pub trait JitRuntime {
     unsafe fn typed<T, X>(&mut self) -> Result<extern "C" fn() -> X>;
 }
 
-impl<'a> JitRuntime for Function<'a> {
+impl JitRuntime for Function {
     /// Tr
     unsafe fn typed<Params, Ret>(&mut self) -> Result<extern "C"  fn() -> Ret> {
         let func_ptr: extern "C" fn() -> Ret = unsafe {
             std::mem::transmute(self.gen.as_ptr())
         };
-
-        if self.gen[0] == asm::endbr64() {
-            self.gen.remove(0);
-        }
 
         if self.esymbols.len() != 0 {   // ExternSymbols isn't empty
             return Err(CodeGenLibError::JitFunctionsNoExtern)

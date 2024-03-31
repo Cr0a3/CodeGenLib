@@ -7,7 +7,7 @@ pub trait Optimize {
     fn optimize(&mut self);
 }
 
-impl<'a> Optimize for Function<'a> {
+impl Optimize for Function {
     fn optimize(&mut self) {
         
     }

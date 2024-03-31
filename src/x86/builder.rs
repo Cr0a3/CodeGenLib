@@ -11,14 +11,14 @@ use crate::OptimizeTrait;
 /// 
 /// It also create the object file via the `faerie` crate
 #[derive(Clone)]
-pub struct Builder<'a> {
-    functions: Vec<Function<'a>>,
+pub struct Builder {
+    functions: Vec<Function>,
     statics: Vec<StaticValue>,
     externs: Vec<ExternFunction>,
     mem: AdressManager
 }
 
-impl<'a> Builder<'a> {
+impl Builder {
     /// Creates a new instance of Builder
     pub fn new() -> Self {
         let memmng = AdressManager::new((0x00, 0x00));  // ToDo: Custom memory ranges
@@ -32,7 +32,7 @@ impl<'a> Builder<'a> {
 
     /// Adds a new global function with the name `name`
     /// To the builder
-    pub fn add_function(&mut self, name: &str) -> &'a mut Function {
+    pub fn add_function(& mut self, name: &str) -> &mut Function {
         let func = Function::new(name, &mut self.mem);
         self.functions.push( func );
         let list = self.functions.clone();
@@ -45,16 +45,16 @@ impl<'a> Builder<'a> {
     /// `name`   - name of the static value
     /// <br>
     /// `global` - import/export from/to other file 
-    pub fn add_static(&mut self, name: &str, global: bool) -> StaticValue {
+    pub fn add_static(& mut self, name: &str, global: bool) -> &mut StaticValue {
         let stat = StaticValue::new(name, global);
         self.statics.push( stat );
         let list = self.statics.clone();
         self.statics.get_mut(list.len() -1)
-            .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47").to_owned()
+            .expect("error while getting last staic value (CodeGenLib/x86/builder.rs/47")
     }
     
     /// Adds function import from another file
-    pub fn add_extern_fn(&mut self, name: &str) -> &mut ExternFunction {
+    pub fn add_extern_fn(& mut self, name: &str) -> &mut ExternFunction {
         let func = ExternFunction { name: name.into() };
         self.externs.push( func );
         let list = self.externs.clone();
@@ -64,7 +64,7 @@ impl<'a> Builder<'a> {
 
     /// Builds all functions, symbols, etc into one
     /// object file with the name `name`
-    pub fn build(&mut self, name: &str) -> Result<(), ArtifactError> {
+    pub fn build(& mut self, name: &str) -> Result<(), ArtifactError> {
         let file = File::create(Path::new(name))?;
         let mut obj = ArtifactBuilder::new(Triple {
             architecture: Architecture::host(),
@@ -104,7 +104,8 @@ impl<'a> Builder<'a> {
         obj.declarations( decls.iter().cloned() )?;
 
         // add functions
-        for func in self.functions.iter() {
+        for func in self.functions.iter_mut() {
+            func.optimize();
             let gen = func.get_gen();
 
             obj.define(func.name.to_string(), gen)?;
@@ -114,10 +115,6 @@ impl<'a> Builder<'a> {
                 obj.link(Link { from: &sym.start, to: &sym.dest, at: sym.at as u64 + 1})?;
             }
 
-        }
-
-        for func in self.functions.iter_mut() {
-            func.optimize();
         }
 
         obj.write(file)?;
