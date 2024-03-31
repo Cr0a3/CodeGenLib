@@ -1,8 +1,8 @@
 //! <h4>Jit execution</h4>
 //! With this module you can jit execute a function
 
-use crate::arch::AsmCall::AsmCall as asm;
-use crate::arch::ext::AMD64::*;
+// use crate::arch::AsmCall::AsmCall as asm;
+// use crate::arch::ext::AMD64::*;
 use crate::x86::function::Function;
 use crate::{Result, CodeGenLibError};
 

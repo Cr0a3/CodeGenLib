@@ -2,6 +2,8 @@
 
 A libary to generate x86-64Bit machine code
 
+> **Error:** Jit dosn't work
+
 ## Example
 ```rust
 use CodeGenLib::{Builder, ArtifactError};

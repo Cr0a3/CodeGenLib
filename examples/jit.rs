@@ -1,5 +1,7 @@
 use CodeGenLib::{Function, Jit, AdressManager, Result};
 
+// Dosn't work
+
 pub fn main() -> Result<()> {
     let mut adr = AdressManager::new((0, 0));
     let mut func = Function::new(
