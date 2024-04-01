@@ -1,6 +1,8 @@
 use std::{fs::File, path::Path};
-use faerie::{ArtifactBuilder, ArtifactError, Decl, Link};
-use target_lexicon::{Architecture, BinaryFormat, Environment, OperatingSystem, Triple, Vendor};
+use object::write::{Object, Relocation, StandardSection, Symbol, SymbolScope, SymbolSection};
+use object::{
+    Architecture, BinaryFormat, Endianness, RelocationEncoding, RelocationFlags, RelocationKind, SymbolFlags, SymbolKind
+};
 use super::{function::*, staticv::*};
 use super::mem::AdressManager;
 use crate::OptimizeTrait;
@@ -64,60 +66,90 @@ impl Builder {
 
     /// Builds all functions, symbols, etc into one
     /// object file with the name `name`
-    pub fn build(& mut self, name: &str) -> Result<(), ArtifactError> {
-        let file = File::create(Path::new(name))?;
-        let mut obj = ArtifactBuilder::new(Triple {
-            architecture: Architecture::host(),
-            vendor: Vendor::host(),
-            operating_system: OperatingSystem::Linux,
-            environment: Environment::host(),
-            binary_format: BinaryFormat::host(),
-        })
-            .name(name.to_owned())
-            .finish();
+    pub fn build(& mut self, name: &str, format: BinaryFormat) -> Result<(), Box<dyn std::error::Error> > {
+        let mut obj = Object::new(format, Architecture::X86_64, Endianness::Little);
 
-        // add declerations
-        let mut decls: Vec<(String, Decl)> = vec![];
+        obj.add_file_symbol(name.clone().as_bytes().into());
 
+        // optimize
+        for func in self.functions.iter_mut() {
+            func.optimize();
+        }
+        
         for func in self.functions.iter() {
-            decls.push( (func.name.to_owned(), Decl::function().global().into() ) );
+            let (section, offset)  = 
+                obj.add_subsection(StandardSection::Text, name.as_bytes(), &func.clone().get_gen(), 16);
+            
+            obj.add_symbol(Symbol {
+                name: func.name.clone().into(),
+                value: offset,
+                size: func.clone().get_gen().len() as u64,
+                kind: SymbolKind::Text,
+                scope: SymbolScope::Compilation,
+                weak: false,
+                section: SymbolSection::Section(section),
+                flags: SymbolFlags::None,     
+            });
 
-            for sym in func.esymbols.iter() {
-                decls.push( (sym.dest.clone(), Decl::function_import().into() )); 
+            for sym in func.esymbols.iter() { 
+                let symid = obj.add_symbol(Symbol {
+                    name: name.as_bytes().into(),
+                    value: 0,
+                    size: 0,
+                    kind: SymbolKind::Text,
+                    scope: SymbolScope::Dynamic,
+                    weak: false,
+                    section: SymbolSection::Undefined,
+                    flags: SymbolFlags::None,
+                });
+
+                obj.add_relocation(
+                    section,
+                    Relocation {
+                        offset: offset + sym.at as u64 + 1,
+                        symbol: symid,
+                        addend: -4,
+                        flags: RelocationFlags::Generic {
+                            kind: RelocationKind::Relative,
+                            encoding: RelocationEncoding::Generic,
+                            size: 32,
+                        },
+                    }
+                )?;
             }
         }
 
         for efunc in self.externs.iter() {
-            decls.push( (efunc.name.to_owned(), Decl::function_import().into() ) );
+            obj.add_symbol(Symbol {
+                name: efunc.name.as_bytes().into(),
+                value: 0,
+                size: 0,
+                kind: SymbolKind::Text,
+                scope: SymbolScope::Dynamic,
+                weak: false,
+                section: SymbolSection::Undefined,
+                flags: SymbolFlags::None, 
+            });
         }
 
         for stat in self.statics.iter() {
-            let mut decl = Decl::cstring();
+            let (section, offset) =
+                obj.add_subsection(StandardSection::ReadOnlyData, name.as_bytes(), &stat.value, 16);
 
-            if stat.global { 
-                decl = decl.global() 
-            }
-
-            decls.push( (stat.name.to_owned(), decl.into() ) );
+            obj.add_symbol(Symbol {
+                name: name.into(),
+                value: offset,
+                size: stat.value.len() as u64,
+                kind: SymbolKind::Data,
+                scope: SymbolScope::Compilation,
+                weak: false,
+                section: SymbolSection::Section(section),
+                flags: SymbolFlags::None,
+            });
         }
-
-        obj.declarations( decls.iter().cloned() )?;
-
-        // add functions
-        for func in self.functions.iter_mut() {
-            func.optimize();
-            let gen = func.get_gen();
-
-            obj.define(func.name.to_string(), gen)?;
-
-            // adding symbols
-            for sym in func.esymbols.iter() {
-                obj.link(Link { from: &sym.start, to: &sym.dest, at: sym.at as u64 + 1})?;
-            }
-
-        }
-
-        obj.write(file)?;
+        
+        let file = File::create(Path::new(name))?;
+        obj.write_stream(file)?;
 
         Ok(())
     }

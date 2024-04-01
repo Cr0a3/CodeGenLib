@@ -42,5 +42,5 @@ pub use arch::def::Arch as Arch;
 #[cfg(feature = "jit")]
 pub use jit::typed::JitRuntime as Jit;
 
-/// ArtifactError exportet from the faerie crate
-pub use faerie::ArtifactError as ArtifactError;
+/// BinaryFormat exportet from the object crate
+pub use object::BinaryFormat as BinaryFormat;
