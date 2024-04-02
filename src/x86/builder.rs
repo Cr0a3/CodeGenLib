@@ -93,7 +93,7 @@ impl Builder {
 
             for sym in func.esymbols.iter() { 
                 let symid = obj.add_symbol(Symbol {
-                    name: name.as_bytes().into(),
+                    name: sym.dest.as_bytes().into(),
                     value: 0,
                     size: 0,
                     kind: SymbolKind::Text,
@@ -106,11 +106,11 @@ impl Builder {
                 obj.add_relocation(
                     section,
                     Relocation {
-                        offset: offset + sym.at as u64 + 1,
+                        offset: offset + sym.at as u64,
                         symbol: symid,
                         addend: -4,
                         flags: RelocationFlags::Generic {
-                            kind: RelocationKind::Relative,
+                            kind: RelocationKind::PltRelative,
                             encoding: RelocationEncoding::Generic,
                             size: 32,
                         },

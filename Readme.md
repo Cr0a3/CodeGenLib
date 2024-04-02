@@ -3,19 +3,20 @@
 A libary to generate x86-64Bit machine code
 
 > **Error:** Jit dosn't work
+> **Warning:** this libary is currently undergoing big changes so don't use in production
 
 ## Example
 ```rust
-use CodeGenLib::{Builder, ArtifactError};
+use CodeGenLib::{Builder, BinaryFormat};
 
-pub fn main() -> Result<(), ArtifactError>{
+pub fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut builder = Builder::new();
 
     let func = builder.add_function("call");
     func.call("callme")
     func.ret_int(5);
 
-    builder.build("test.o")?;
+    builder.build("test.o", BinaryFormat::Elf)?;
 
     Ok(())
 }
