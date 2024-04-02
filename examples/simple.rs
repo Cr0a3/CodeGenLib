@@ -8,7 +8,7 @@ pub fn main() -> Result<(), Box<dyn Error>>{
     func.call("callme");
     func.ret_int(5);
 
-    builder.build("test.o", BinaryFormat::Coff)?;
+    builder.build("test.o", BinaryFormat::Elf)?;
 
     Ok(())
 }

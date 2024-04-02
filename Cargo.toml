@@ -12,7 +12,7 @@ license = "MPL-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-object = { version = "0.34.0", features = ["all"] }
+object = { version = "0.34.0", features=["write"] }
 
 [features]
 default = ["all"]

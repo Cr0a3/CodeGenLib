@@ -69,7 +69,7 @@ impl Builder {
     pub fn build(& mut self, name: &str, format: BinaryFormat) -> Result<(), Box<dyn std::error::Error> > {
         let mut obj = Object::new(format, Architecture::X86_64, Endianness::Little);
 
-        obj.add_file_symbol(name.clone().as_bytes().into());
+        obj.add_file_symbol(b"test.o".into());
 
         // optimize
         for func in self.functions.iter_mut() {
@@ -78,14 +78,14 @@ impl Builder {
         
         for func in self.functions.iter() {
             let (section, offset)  = 
-                obj.add_subsection(StandardSection::Text, name.as_bytes(), &func.clone().get_gen(), 16);
+                obj.add_subsection(StandardSection::Text, func.name.as_bytes(), &func.clone().get_gen(), 16);
             
             obj.add_symbol(Symbol {
                 name: func.name.clone().into(),
                 value: offset,
                 size: func.clone().get_gen().len() as u64,
                 kind: SymbolKind::Text,
-                scope: SymbolScope::Compilation,
+                scope: SymbolScope::Linkage,
                 weak: false,
                 section: SymbolSection::Section(section),
                 flags: SymbolFlags::None,     
