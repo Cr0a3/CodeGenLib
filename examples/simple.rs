@@ -1,10 +1,17 @@
 use std::error::Error;
-use CodeGenLib::{Builder, BinFormat};
+use CodeGenLib::{BinFormat, Builder, IR::*};
 
-pub fn main() -> Result<(), Box<dyn Error>>{
+#[rustfmt::skip]
+pub fn main() -> Result<(), Box<dyn Error>> {
     let mut builder = Builder::new();
 
-    builder.write("test.o", BinFormat::host())?;
+    builder.define("call", true, vec![
+        Call("callme"), 
+        MovVal(EAX, 5), 
+        RET,
+    ]);
+
+    builder.write("tmp/test.o", BinFormat::host())?;
 
     Ok(())
 }

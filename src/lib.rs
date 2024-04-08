@@ -1,10 +1,10 @@
 //! CodeGenLib is a rust libary to generate x86-64Bit machine code (like llvm)
-//! 
+//!
 //! <h4>Example</h4>
-//! 
+//!
 //! ```
 //! use CodeGenLib::{Builder, ArtifactError}
-//! 
+//!
 //! pub fn main() -> Result<(), ArtifactError> {
 //!    let mut builder = Builder::new();
 //!
@@ -17,23 +17,28 @@
 //!    Ok(())
 //! }
 //! ```
-//! 
-//! The examples would make a elf file with a function named call wich just calls 
+//!
+//! The examples would make a elf file with a function named call wich just calls
 //! a function named callme and then returns a 1  
 
 #![allow(non_snake_case)]
 
-pub mod x86;
-pub mod opt;
-pub mod error;
 pub mod arch;
+pub mod error;
 pub mod ir;
 #[cfg(feature = "jit")]
 pub mod jit;
+pub mod opt;
+pub mod x86;
 
-pub use x86::*;
-pub use x86::builder::Builder as Builder;
 pub use ir::resolve;
+pub use x86::builder::Builder;
+pub use x86::*;
+
+pub mod IR {
+    pub use crate::x86::asm::AsmInstructionEnum::*;
+    pub use crate::x86::asm::REGISTER::*;
+}
 
 pub use opt::Optimize;
 
@@ -41,4 +46,4 @@ pub use opt::Optimize;
 //pub use jit::typed::JitRuntime as Jit;
 
 /// BinaryFormat re-exported
-pub use formatic::BinFormat as BinFormat;
+pub use formatic::BinFormat;
