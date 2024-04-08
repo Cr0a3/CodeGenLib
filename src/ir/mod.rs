@@ -1,20 +1,33 @@
 use std::collections::HashMap;
 
-use formatic::{Decl, Link};
+use formatic::{Decl, Link, Scope};
 
 use crate::{
     arch::{ext::AMD64::*, AsmCall::AsmCall},
     asm::{AsmInstructionEnum, REGISTER},
 };
 
-pub fn resolve(code: &Vec<AsmInstructionEnum>) -> (Vec<u8>, Vec<Link>, HashMap<String, Decl>) {
+pub fn resolve(
+    funcs: Vec<String>,
+    code: &Vec<AsmInstructionEnum>,
+) -> (Vec<u8>, Vec<Link>, HashMap<String, Decl>) {
     let mut decls: HashMap<String, Decl> = HashMap::new();
     let mut links = vec![];
     let mut generated = vec![];
 
+    for byte in AsmCall::endbr64() {
+        generated.push(byte);
+    }
+
+    generated.push(AsmCall::push(REGISTER::RBP)[0]);
+
+    for byte in AsmCall::mov_reg(REGISTER::RBP, REGISTER::RSP) {
+        generated.push(byte);
+    }
+
     for instruction in code {
         let gen = match *instruction {
-            AsmInstructionEnum::RET => AsmCall::ret(),
+            AsmInstructionEnum::Ret => AsmCall::ret(),
             AsmInstructionEnum::MovVal(reg, value) => {
                 if reg == REGISTER::RAX
                     || reg == REGISTER::RBP
@@ -48,8 +61,8 @@ pub fn resolve(code: &Vec<AsmInstructionEnum>) -> (Vec<u8>, Vec<Link>, HashMap<S
             AsmInstructionEnum::Call(dest) => {
                 let target = dest.to_string();
 
-                if !decls.contains_key(&target) {
-                    decls.insert(target.clone(), Decl::Function(formatic::Scope::Import));
+                if !decls.contains_key(&target) && !funcs.contains(&target) {
+                    decls.insert(target.clone(), Decl::Function(Scope::Import));
                 };
 
                 links.push(Link {
@@ -66,6 +79,10 @@ pub fn resolve(code: &Vec<AsmInstructionEnum>) -> (Vec<u8>, Vec<Link>, HashMap<S
             generated.push(byte)
         }
     }
+
+    generated.push(AsmCall::nop()[0]);
+    generated.push(AsmCall::pop(REGISTER::RBP)[0]);
+    generated.push(AsmCall::ret()[0]);
 
     (generated, links, decls)
 }

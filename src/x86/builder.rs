@@ -7,6 +7,7 @@ use std::collections::HashMap;
 /// It also create the object file via the `formatic` crate
 pub struct Builder {
     funcs: HashMap<String, (bool, Vec<AsmInstructionEnum>)>,
+    func_names: Vec<String>,
 }
 
 impl Builder {
@@ -14,12 +15,14 @@ impl Builder {
     pub fn new() -> Self {
         Self {
             funcs: HashMap::new(),
+            func_names: vec![],
         }
     }
 
     pub fn define(&mut self, name: &str, public: bool, code: Vec<AsmInstructionEnum>) {
         let code = Optimize(code);
         self.funcs.insert(name.into(), (public, code));
+        self.func_names.push(name.into());
     }
 
     pub fn write(
@@ -35,7 +38,7 @@ impl Builder {
         for func in self.funcs.iter() {
             let ir = &func.1 .1;
 
-            let resolved = resolve(&ir);
+            let resolved = resolve(self.func_names.clone(), &ir);
 
             resolved_funcs.insert(func.0.to_owned(), resolved.0);
 

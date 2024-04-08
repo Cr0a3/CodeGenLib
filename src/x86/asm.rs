@@ -49,7 +49,7 @@ pub fn to_bytes_16(value: u16) -> (u8, u8) {
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AsmInstructionEnum {
-    RET,
+    Ret,
     MovVal(REGISTER, u64),
     MovReg(REGISTER, REGISTER),
     Call(&'static str),
