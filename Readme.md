@@ -12,9 +12,12 @@ use CodeGenLib::{Builder, BinaryFormat};
 pub fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut builder = Builder::new();
 
-    let func = builder.add_function("call");
-    func.call("callme")
-    func.ret_int(5);
+    let func = builder.function(
+        "call",
+        vec![
+            Call("callme"),
+            Return(5),
+        ]);
 
     builder.build("test.o", BinaryFormat::Elf)?;
 

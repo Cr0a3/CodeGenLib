@@ -1,14 +1,10 @@
 use std::error::Error;
-use CodeGenLib::{Builder, BinaryFormat};
+use CodeGenLib::{Builder, BinFormat};
 
 pub fn main() -> Result<(), Box<dyn Error>>{
     let mut builder = Builder::new();
 
-    let func = builder.add_function("call");
-    func.call("callme");
-    func.ret_int(5);
-
-    builder.build("test.o", BinaryFormat::Elf)?;
+    builder.write("test.o", BinFormat::host())?;
 
     Ok(())
 }

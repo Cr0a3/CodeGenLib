@@ -24,3 +24,7 @@ pub fn to_bytes_16(value: u16) -> (u8, u8) {
 
     (arr[0], arr[1])
 }
+
+pub enum AsmInstructionEnum {
+    
+}

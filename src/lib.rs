@@ -27,20 +27,18 @@ pub mod x86;
 pub mod opt;
 pub mod error;
 pub mod arch;
+pub mod ir;
 #[cfg(feature = "jit")]
 pub mod jit;
 
 pub use x86::*;
-pub use x86::function::Function as Function;
 pub use x86::builder::Builder as Builder;
-pub use x86::mem::AdressManager as AdressManager;
-pub use opt::optimize::Optimize as OptimizeTrait;
-pub use error::Result as Result;
-pub use error::CodeGenLibError as CodeGenLibError;
-pub use arch::def::Arch as Arch;
+pub use ir::resolve;
 
-#[cfg(feature = "jit")]
-pub use jit::typed::JitRuntime as Jit;
+pub use opt::Optimize;
 
-/// BinaryFormat exportet from the object crate
-pub use object::BinaryFormat as BinaryFormat;
+//#[cfg(feature = "jit")]
+//pub use jit::typed::JitRuntime as Jit;
+
+/// BinaryFormat re-exported
+pub use formatic::BinFormat as BinFormat;

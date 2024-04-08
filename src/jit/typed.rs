@@ -3,7 +3,7 @@
 
 // use crate::arch::AsmCall::AsmCall as asm;
 // use crate::arch::ext::AMD64::*;
-use crate::x86::function::Function;
+/*use crate::x86::function::Function;
 use crate::{Result, CodeGenLibError};
 
 pub trait JitRuntime {
@@ -24,4 +24,4 @@ impl JitRuntime for Function {
 
         Ok(func_ptr)
     }
-}
+}*/
