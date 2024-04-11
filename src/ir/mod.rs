@@ -6,6 +6,9 @@ use iced_x86::{Code, Encoder, Instruction};
 
 use crate::asm::AsmInstructionEnum;
 
+pub mod safe;
+pub use safe::SafeCode;
+
 pub fn resolve(
     funcs: Vec<String>,
     code: &Vec<AsmInstructionEnum>,
@@ -19,6 +22,11 @@ pub fn resolve(
     for instruction in code {
         let instr = match *instruction {
             AsmInstructionEnum::Ret => Instruction::with(Code::Retnq),
+
+            AsmInstructionEnum::Endbr64 => Instruction::with(Code::Endbr64),
+
+            AsmInstructionEnum::Nop => Instruction::with(Code::Nopw),
+
             AsmInstructionEnum::Push(reg) => {
                 if reg.size() == 8 {
                     Instruction::with1(Code::Push_r64, reg)?
@@ -29,7 +37,7 @@ pub fn resolve(
                 } else {
                     Instruction::with(Code::Nopq)
                 }
-            }
+            },
 
             AsmInstructionEnum::Pop(reg) => {
                 if reg.size() == 8 {
@@ -41,7 +49,7 @@ pub fn resolve(
                 } else {
                     Instruction::with(Code::Nopd)
                 }
-            }
+            },
 
             AsmInstructionEnum::Call(target) => {
                 let target = target.to_string();
@@ -57,7 +65,7 @@ pub fn resolve(
                 });
 
                 Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0) // call 0
-            }
+            },
 
             AsmInstructionEnum::MovVal(reg, value) => {
                 if reg.size() == 8 {
@@ -71,7 +79,21 @@ pub fn resolve(
                 } else {
                     Instruction::with(Code::Nopd)
                 }
-            }
+            },
+
+            AsmInstructionEnum::MovReg(src, target) => {
+                if (src.size() == 8) && (target.size() == 8) {
+                    Instruction::with2(Code::Mov_r64_rm64, src, target)?
+                } else if (src.size() == 4) && (target.size() == 4) {
+                    Instruction::with2(Code::Mov_r32_rm32, src, target)?
+                } else if (src.size() == 2) && (target.size() == 2) {
+                    Instruction::with2(Code::Mov_r16_rm16, src, target)?
+                } else if (src.size() == 1) && (target.size() == 1) {
+                    Instruction::with2(Code::Mov_r8_rm8, src, target)?
+                } else {
+                    Instruction::with(Code::Nopq)
+                }
+            },
         };
 
         match asm.encode(&instr, 0xfff) {

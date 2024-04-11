@@ -1,4 +1,4 @@
-use crate::{asm::AsmInstructionEnum, resolve, Optimize};
+use crate::{asm::AsmInstructionEnum, ir::SafeCode, resolve, Optimize};
 use formatic::{Arch, BinFormat, Decl, Endian, Link, ObjectBuilder, Scope};
 use std::collections::HashMap;
 
@@ -19,10 +19,13 @@ impl Builder {
         }
     }
 
-    pub fn define(&mut self, name: &str, public: bool, code: Vec<AsmInstructionEnum>) {
+    pub fn define(&mut self, name: &str, public: bool, code: Vec<AsmInstructionEnum>) -> Result<(), Box<dyn std::error::Error>> {
+        let code = SafeCode(code)?;
         let code = Optimize(code);
         self.funcs.insert(name.into(), (public, code));
         self.func_names.push(name.into());
+
+        Ok(())
     }
 
     pub fn write(

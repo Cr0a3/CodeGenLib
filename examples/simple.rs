@@ -8,8 +8,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     builder.define("call", true, vec![
         Call("callme"), 
         MovVal(Register::EAX, 5),
-        Ret,
-    ]);
+    ])?;
 
     builder.write("tmp/test.o", BinFormat::Coff)?;
 
