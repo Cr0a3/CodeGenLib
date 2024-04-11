@@ -8,12 +8,12 @@ pub enum AsmInstructionEnum {
 
     MovVal(Register, u64),
     MovReg(Register, Register),
-    //Store(Register, u64),
-    //Load(Register, u64),
+    Store(Register, u64),
+    Load(Register, u64),
     Call(&'static str),
-    /*Jmp(&'static str),
+    Jmp(&'static str),
 
-    Inc(Register),
+    /*Inc(Register),
     Dec(Register),
 
     AdcVal(Register, u64),

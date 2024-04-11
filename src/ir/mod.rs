@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error};
 
 use formatic::{Decl, Link, Scope};
 
-use iced_x86::{Code, Encoder, Instruction};
+use iced_x86::{Code, Encoder, Instruction, MemoryOperand, Register};
 
 use crate::asm::AsmInstructionEnum;
 
@@ -64,7 +64,23 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0) // call 0
+                Instruction::with1(Code::Call_rm64, MemoryOperand::new(Register::None, Register::None, 1, 0, 1, false, Register::None))?
+            },
+
+            AsmInstructionEnum::Jmp(target) => {
+                let target = target.to_string();
+
+                if !decls.contains_key(&target) && !funcs.contains(&target) {
+                    decls.insert(target.clone(), Decl::Function(Scope::Import));
+                };
+
+                links.push(Link {
+                    from: String::new(),
+                    to: target,
+                    at: generated.len() + 1,
+                });
+
+                Instruction::with1(Code::Jmp_rm64, MemoryOperand::new(Register::None, Register::None, 1, 0, 1, false, Register::None))?
             },
 
             AsmInstructionEnum::MovVal(reg, value) => {
@@ -94,6 +110,34 @@ pub fn resolve(
                     Instruction::with(Code::Nopq)
                 }
             },
+
+            AsmInstructionEnum::Load(reg, adr) => {
+                if reg.size() == 8 {
+                    Instruction::with2(Code::Mov_r64_rm64, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                } else if reg.size() == 4 {
+                    Instruction::with2(Code::Mov_r32_rm32, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                } else if reg.size() == 2 {
+                    Instruction::with2(Code::Mov_r16_rm16, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                } else if reg.size() == 1 {
+                    Instruction::with2(Code::Mov_r8_rm8, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
+            }
+
+            AsmInstructionEnum::Store(reg, adr) => {
+                if reg.size() == 8 {
+                    Instruction::with2(Code::Mov_rm64_r64, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                } else if reg.size() == 4 {
+                    Instruction::with2(Code::Mov_rm32_r32, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                } else if reg.size() == 2 {
+                    Instruction::with2(Code::Mov_rm16_r16, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                } else if reg.size() == 1 {
+                    Instruction::with2(Code::Mov_rm8_r8, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
+            }
         };
 
         match asm.encode(&instr, 0xfff) {
