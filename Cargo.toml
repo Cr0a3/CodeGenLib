@@ -13,7 +13,7 @@ license = "MPL-2.0"
 
 [dependencies]
 formatic = "0.1.0"
-object = { version = "0.34.0", features=["write"] }
+iced-x86 = "1.21.0"
 
 [features]
 default = ["all"]

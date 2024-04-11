@@ -7,10 +7,11 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
     builder.define("call", true, vec![
         Call("callme"), 
-        MovVal(EAX, 5),
+        MovVal(Register::EAX, 5),
+        Ret,
     ]);
 
-    builder.write("tmp/test.o", BinFormat::host())?;
+    builder.write("tmp/test.o", BinFormat::Coff)?;
 
     Ok(())
 }

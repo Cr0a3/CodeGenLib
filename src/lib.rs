@@ -23,7 +23,6 @@
 
 #![allow(non_snake_case)]
 
-pub mod arch;
 pub mod error;
 pub mod ir;
 #[cfg(feature = "jit")]
@@ -37,7 +36,7 @@ pub use x86::*;
 
 pub mod IR {
     pub use crate::x86::asm::AsmInstructionEnum::*;
-    pub use crate::x86::asm::REGISTER::*;
+    pub use iced_x86::Register;
 }
 
 pub use opt::Optimize;

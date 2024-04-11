@@ -1,65 +1,50 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
 use formatic::{Decl, Link, Scope};
 
-use crate::{
-    arch::{ext::AMD64::*, AsmCall::AsmCall},
-    asm::{AsmInstructionEnum, REGISTER},
-};
+use iced_x86::{Code, Encoder, Instruction};
+
+use crate::asm::AsmInstructionEnum;
 
 pub fn resolve(
     funcs: Vec<String>,
     code: &Vec<AsmInstructionEnum>,
-) -> (Vec<u8>, Vec<Link>, HashMap<String, Decl>) {
+) -> Result<(Vec<u8>, Vec<Link>, HashMap<String, Decl>), Box<dyn Error>> {
     let mut decls: HashMap<String, Decl> = HashMap::new();
     let mut links = vec![];
     let mut generated = vec![];
 
-    for byte in AsmCall::endbr64() {
-        generated.push(byte);
-    }
-
-    generated.push(AsmCall::push(REGISTER::RBP)[0]);
-
-    for byte in AsmCall::mov_reg(REGISTER::RBP, REGISTER::RSP) {
-        generated.push(byte);
-    }
+    let mut asm = Encoder::new(64);
 
     for instruction in code {
-        let gen = match *instruction {
-            AsmInstructionEnum::Ret => AsmCall::ret(),
-            AsmInstructionEnum::MovVal(reg, value) => {
-                if reg == REGISTER::RAX
-                    || reg == REGISTER::RBP
-                    || reg == REGISTER::RBX
-                    || reg == REGISTER::RCX
-                    || reg == REGISTER::RDI
-                    || reg == REGISTER::RDX
-                    || reg == REGISTER::RIP
-                    || reg == REGISTER::RSI
-                    || reg == REGISTER::RSP
-                {
-                    AsmCall::mov_64(reg, value)
-                } else if reg == REGISTER::EAX
-                    || reg == REGISTER::EBX
-                    || reg == REGISTER::ECX
-                    || reg == REGISTER::EDX
-                {
-                    AsmCall::mov_32(reg, value as u32)
-                } else if reg == REGISTER::AX
-                    || reg == REGISTER::BX
-                    || reg == REGISTER::CX
-                    || reg == REGISTER::DX
-                {
-                    AsmCall::mov_16(reg, value as u16)
+        let instr = match *instruction {
+            AsmInstructionEnum::Ret => Instruction::with(Code::Retnq),
+            AsmInstructionEnum::Push(reg) => {
+                if reg.size() == 8 {
+                    Instruction::with1(Code::Push_r64, reg)?
+                } else if reg.size() == 4 {
+                    Instruction::with1(Code::Push_r32, reg)?
+                } else if reg.size() == 2 {
+                    Instruction::with1(Code::Push_r16, reg)?
                 } else {
-                    AsmCall::mov_8(reg, value as u8)
+                    Instruction::with(Code::Nopq)
                 }
             }
 
-            AsmInstructionEnum::MovReg(to, from) => AsmCall::mov_reg(to, from),
-            AsmInstructionEnum::Call(dest) => {
-                let target = dest.to_string();
+            AsmInstructionEnum::Pop(reg) => {
+                if reg.size() == 8 {
+                    Instruction::with1(Code::Pop_r64, reg)?
+                } else if reg.size() == 4 {
+                    Instruction::with1(Code::Pop_r32, reg)?
+                } else if reg.size() == 2 {
+                    Instruction::with1(Code::Pop_r16, reg)?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
+            }
+
+            AsmInstructionEnum::Call(target) => {
+                let target = target.to_string();
 
                 if !decls.contains_key(&target) && !funcs.contains(&target) {
                     decls.insert(target.clone(), Decl::Function(Scope::Import));
@@ -71,18 +56,33 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                AsmCall::call(0)
+                Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0) // call 0
+            }
+
+            AsmInstructionEnum::MovVal(reg, value) => {
+                if reg.size() == 8 {
+                    Instruction::with2(Code::Mov_r64_imm64, reg, value)?
+                } else if reg.size() == 4 {
+                    Instruction::with2(Code::Mov_r32_imm32, reg, value)?
+                } else if reg.size() == 2 {
+                    Instruction::with2(Code::Mov_r16_imm16, reg, value)?
+                } else if reg.size() == 1 {
+                    Instruction::with2(Code::Mov_r8_imm8, reg, value)?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
             }
         };
 
-        for byte in gen {
+        match asm.encode(&instr, 0xfff) {
+            Ok(_) => {}
+            Err(e) => return Err(Box::from(e)),
+        };
+
+        for byte in asm.take_buffer() {
             generated.push(byte)
         }
     }
 
-    generated.push(AsmCall::nop()[0]);
-    generated.push(AsmCall::pop(REGISTER::RBP)[0]);
-    generated.push(AsmCall::ret()[0]);
-
-    (generated, links, decls)
+    Ok((generated, links, decls))
 }

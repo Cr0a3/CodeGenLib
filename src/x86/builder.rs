@@ -38,7 +38,7 @@ impl Builder {
         for func in self.funcs.iter() {
             let ir = &func.1 .1;
 
-            let resolved = resolve(self.func_names.clone(), &ir);
+            let resolved = resolve(self.func_names.clone(), &ir)?;
 
             resolved_funcs.insert(func.0.to_owned(), resolved.0);
 
