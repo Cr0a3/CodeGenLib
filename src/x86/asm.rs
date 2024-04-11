@@ -13,11 +13,9 @@ pub enum AsmInstructionEnum {
     Call(&'static str),
     Jmp(&'static str),
 
-    /*Inc(Register),
+    Inc(Register),
     Dec(Register),
 
-    AdcVal(Register, u64),
-    AdcReg(Register, Register),*/
     Push(Register),
     Pop(Register),
 }

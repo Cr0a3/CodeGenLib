@@ -138,6 +138,34 @@ pub fn resolve(
                     Instruction::with(Code::Nopd)
                 }
             }
+
+            AsmInstructionEnum::Inc(reg) => {
+                if reg.size() == 8 {
+                    Instruction::with1(Code::Inc_rm64, reg)?
+                } else if reg.size() == 4 {
+                    Instruction::with1(Code::Inc_rm32, reg)?
+                } else if reg.size() == 2 {
+                    Instruction::with1(Code::Inc_rm16, reg)?
+                } else if reg.size() == 1 {
+                    Instruction::with1(Code::Inc_rm8, reg)?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
+            }
+
+            AsmInstructionEnum::Dec(reg) => {
+                if reg.size() == 8 {
+                    Instruction::with1(Code::Dec_rm64, reg)?
+                } else if reg.size() == 4 {
+                    Instruction::with1(Code::Dec_rm32, reg)?
+                } else if reg.size() == 2 {
+                    Instruction::with1(Code::Dec_rm16, reg)?
+                } else if reg.size() == 1 {
+                    Instruction::with1(Code::Dec_rm8, reg)?
+                } else {
+                    Instruction::with(Code::Nopd)
+                }
+            }
         };
 
         match asm.encode(&instr, 0xfff) {
