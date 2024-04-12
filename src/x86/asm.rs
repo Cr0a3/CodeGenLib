@@ -18,6 +18,13 @@ pub enum AsmInstructionEnum {
     Inc(Register),
     Dec(Register),
 
+    IncMem(MemoryOperand),
+    DecMem(MemoryOperand),
+
+    AddVal(Register, u32),
+    AddReg(Register, Register),
+    AddMem(Register, MemoryOperand),
+
     Push(Register),
     Pop(Register),
 }
