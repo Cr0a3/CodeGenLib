@@ -2,9 +2,9 @@ use std::{collections::HashMap, error::Error};
 
 use formatic::{Decl, Link, Scope};
 
-use iced_x86::{Code, Encoder, Instruction, MemoryOperand, Register};
+use iced_x86::{Code, Encoder, Instruction};
 
-use crate::asm::AsmInstructionEnum;
+use crate::asm::{adr, AsmInstructionEnum};
 
 pub mod safe;
 pub use safe::SafeCode;
@@ -64,7 +64,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                Instruction::with1(Code::Call_rm64, MemoryOperand::new(Register::None, Register::None, 1, 0, 1, false, Register::None))?
+                Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0)
             },
 
             AsmInstructionEnum::Jmp(target) => {
@@ -80,7 +80,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                Instruction::with1(Code::Jmp_rm64, MemoryOperand::new(Register::None, Register::None, 1, 0, 1, false, Register::None))?
+                Instruction::with_declare_byte_5(0xEB, 0, 0, 0, 0)
             },
 
             AsmInstructionEnum::MovVal(reg, value) => {
@@ -111,29 +111,29 @@ pub fn resolve(
                 }
             },
 
-            AsmInstructionEnum::Load(reg, adr) => {
+            AsmInstructionEnum::Load(reg, mem) => {
                 if reg.size() == 8 {
-                    Instruction::with2(Code::Mov_r64_rm64, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                    Instruction::with2(Code::Mov_r64_rm64, reg, mem)?
                 } else if reg.size() == 4 {
-                    Instruction::with2(Code::Mov_r32_rm32, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                    Instruction::with2(Code::Mov_r32_rm32, reg, mem)?
                 } else if reg.size() == 2 {
-                    Instruction::with2(Code::Mov_r16_rm16, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                    Instruction::with2(Code::Mov_r16_rm16, reg, mem)?
                 } else if reg.size() == 1 {
-                    Instruction::with2(Code::Mov_r8_rm8, reg, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None))?
+                    Instruction::with2(Code::Mov_r8_rm8, reg, mem)?
                 } else {
                     Instruction::with(Code::Nopd)
                 }
             }
 
-            AsmInstructionEnum::Store(reg, adr) => {
+            AsmInstructionEnum::Store(reg, mem) => {
                 if reg.size() == 8 {
-                    Instruction::with2(Code::Mov_rm64_r64, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                    Instruction::with2(Code::Mov_rm64_r64, mem, reg)?
                 } else if reg.size() == 4 {
-                    Instruction::with2(Code::Mov_rm32_r32, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                    Instruction::with2(Code::Mov_rm32_r32, mem, reg)?
                 } else if reg.size() == 2 {
-                    Instruction::with2(Code::Mov_rm16_r16, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                    Instruction::with2(Code::Mov_rm16_r16, mem, reg)?
                 } else if reg.size() == 1 {
-                    Instruction::with2(Code::Mov_rm8_r8, MemoryOperand::new(Register::None, Register::None, 1, adr as i64, 1, false, Register::None), reg)?
+                    Instruction::with2(Code::Mov_rm8_r8, mem, reg)?
                 } else {
                     Instruction::with(Code::Nopd)
                 }
