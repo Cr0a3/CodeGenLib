@@ -38,6 +38,13 @@ pub enum AsmInstructionEnum {
     Pop(Register),
 }
 
+pub enum DataTyp {
+    Int32,
+    Int64,
+
+    Custom(u64),
+}
+
 pub fn adr(adress: i64) -> MemoryOperand {
     MemoryOperand::new(
         Register::None,
@@ -50,24 +57,38 @@ pub fn adr(adress: i64) -> MemoryOperand {
     )
 }
 
-pub fn arg(nr: i64) -> MemoryOperand {
+pub fn arg(nr: u64, size: u64, prev_size: u64) -> MemoryOperand {
     MemoryOperand::new(
         Register::RBP,
         Register::None,
         1,
-        (nr * 4) + 4,
+        ( nr + size + prev_size + 4 ) as i64 - 1,
         1,
         false,
         Register::None,
     )
 }
 
-pub fn var(nr: i64) -> MemoryOperand {
+pub fn arg32(nr: u64) -> Register {
+    match nr {
+        1 => Register::EDI,
+        2 => Register::ESI,
+        3 => Register::EDX,
+        4 => Register::ECX,
+        5 => Register::R8D,
+        6 => Register::R9D,
+        _ => Register::None,
+    }
+}
+
+pub fn var(nr: u64, prev_size: u64) -> MemoryOperand {
+    let displ = (prev_size + 4) as i64;
+
     MemoryOperand::new(
         Register::RBP,
         Register::None,
         1,
-        -(nr * 4),
+        -displ,
         1,
         false,
         Register::None,
