@@ -1,4 +1,4 @@
-use iced_x86::{Register, MemoryOperand};
+use iced_x86::{MemoryOperand, Register};
 
 #[derive(Clone, Copy)]
 pub enum AsmInstructionEnum {
@@ -25,18 +25,51 @@ pub enum AsmInstructionEnum {
     AddReg(Register, Register),
     AddMem(Register, MemoryOperand),
 
+    SubVal(Register, u64),
+    SubReg(Register, Register),
+    SubMem(Register, MemoryOperand),
+
+    MulVal(Register, u64),
+    MulReg(Register, Register),
+    MulMem(Register, MemoryOperand),
+
     Push(Register),
+    PushVal(u32),
     Pop(Register),
 }
 
 pub fn adr(adress: i64) -> MemoryOperand {
-    MemoryOperand::new(Register::None, Register::None, 1, adress, 1, false, Register::None)
+    MemoryOperand::new(
+        Register::None,
+        Register::None,
+        1,
+        adress,
+        1,
+        false,
+        Register::None,
+    )
 }
 
 pub fn arg(nr: i64) -> MemoryOperand {
-    MemoryOperand::new(Register::RBP, Register::None, 1, (nr * 4) + 4, 1, false, Register::None)
+    MemoryOperand::new(
+        Register::RBP,
+        Register::None,
+        1,
+        (nr * 4) + 4,
+        1,
+        false,
+        Register::None,
+    )
 }
 
 pub fn var(nr: i64) -> MemoryOperand {
-    MemoryOperand::new(Register::RBP, Register::None, 1, -(nr * 4), 1, false, Register::None)
+    MemoryOperand::new(
+        Register::RBP,
+        Register::None,
+        1,
+        -(nr * 4),
+        1,
+        false,
+        Register::None,
+    )
 }

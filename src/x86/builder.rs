@@ -19,7 +19,12 @@ impl Builder {
         }
     }
 
-    pub fn define(&mut self, name: &str, public: bool, code: Vec<AsmInstructionEnum>) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn define(
+        &mut self,
+        name: &str,
+        public: bool,
+        code: Vec<AsmInstructionEnum>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let code = SafeCode(code)?;
         let code = Optimize(code);
         self.funcs.insert(name.into(), (public, code));

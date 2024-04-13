@@ -1,5 +1,5 @@
 use std::error::Error;
-use CodeGenLib::{asm::arg, BinFormat, Builder, IR::*};
+use CodeGenLib::{BinFormat, Builder, IR::*};
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn Error>> {

@@ -4,7 +4,6 @@ use crate::asm::AsmInstructionEnum;
 use std::{collections::VecDeque, error::Error};
 
 pub fn SafeCode(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>, Box<dyn Error>> {
-
     let mut ret = VecDeque::from(code);
 
     // endbr64
