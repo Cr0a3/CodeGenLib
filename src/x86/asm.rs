@@ -21,7 +21,7 @@ pub enum AsmInstructionEnum {
     IncMem(MemoryOperand),
     DecMem(MemoryOperand),
 
-    AddVal(Register, u32),
+    AddVal(Register, u64),
     AddReg(Register, Register),
     AddMem(Register, MemoryOperand),
 
@@ -34,5 +34,9 @@ pub fn adr(adress: i64) -> MemoryOperand {
 }
 
 pub fn arg(nr: i64) -> MemoryOperand {
+    MemoryOperand::new(Register::RBP, Register::None, 1, (nr * 4) + 4, 1, false, Register::None)
+}
+
+pub fn var(nr: i64) -> MemoryOperand {
     MemoryOperand::new(Register::RBP, Register::None, 1, -(nr * 4), 1, false, Register::None)
 }

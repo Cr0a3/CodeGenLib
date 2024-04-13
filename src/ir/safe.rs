@@ -17,9 +17,8 @@ pub fn SafeCode(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
     // nop
     // pop rbp
     // ret
-    ret.push_back(AsmInstructionEnum::Ret);
     ret.push_back(AsmInstructionEnum::Pop(Register::RBP));
-    ret.push_back(AsmInstructionEnum::Nop);
+    ret.push_back(AsmInstructionEnum::Ret);
 
     Ok(ret.into())
 }
