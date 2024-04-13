@@ -1,5 +1,5 @@
 use std::error::Error;
-use CodeGenLib::{BinFormat, Builder, IR::*};
+use CodeGenLib::{Builder, IR::*};
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn Error>> {
@@ -10,7 +10,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         MovVal(Register::EAX, 5),
     ])?;
 
-    builder.write("tmp/test.o", BinFormat::host())?;
+    builder.write("tmp/test.o")?;
 
     Ok(())
 }

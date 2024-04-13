@@ -70,18 +70,31 @@ pub fn arg(nr: u64, size: u64, prev_size: u64) -> MemoryOperand {
 }
 
 pub fn arg32(nr: u64) -> Register {
+    let arg1 = {
+        if cfg!(target_os = "windows") {
+            Register::ECX
+        } else {
+            Register::EDI
+        }
+    };
+
+    let arg2 = {
+        if cfg!(target_os = "windows") {
+            Register::EDX
+        } else {
+            Register::ESI
+        }
+    };
+
     match nr {
-        1 => Register::EDI,
-        2 => Register::ESI,
-        3 => Register::EDX,
-        4 => Register::ECX,
-        5 => Register::R8D,
-        6 => Register::R9D,
+        1 => arg2,
+        2 => arg1,
+
         _ => Register::None,
     }
 }
 
-pub fn var(nr: u64, prev_size: u64) -> MemoryOperand {
+pub fn var(prev_size: u64) -> MemoryOperand {
     let displ = (prev_size + 4) as i64;
 
     MemoryOperand::new(

@@ -36,7 +36,6 @@ impl Builder {
     pub fn write(
         &mut self,
         outpath: &str,
-        binformat: BinFormat,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut obj = ObjectBuilder::new(outpath);
 
@@ -82,7 +81,7 @@ impl Builder {
             obj.define(&func.0, func.1);
         }
 
-        obj.write(binformat, Arch::X86_64, Endian::Litte)?;
+        obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)?;
         Ok(())
     }
 }
