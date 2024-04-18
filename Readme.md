@@ -2,27 +2,27 @@
 
 A libary to generate x86-64Bit machine code
 
-> **Error:** Jit dosn't work
 > **Warning:** this libary is currently undergoing big changes so don't use in production
 
 ## Example
 ```rust
-use CodeGenLib::{Builder, BinaryFormat};
+use std::error::Error;
+use CodeGenLib::{Builder, IR::*};
 
-pub fn main() -> Result<(), Box<dyn std::error::Error>>{
+#[rustfmt::skip]
+pub fn main() -> Result<(), Box<dyn Error>> {
     let mut builder = Builder::new();
 
-    let func = builder.function(
-        "call",
-        vec![
-            Call("callme"),
-            Return(5),
-        ]);
+    builder.define("call", true, vec![
+        Call("callme"),
+        MovVal(Register::EAX, 5),
+    ])?;
 
-    builder.build("test.o", BinaryFormat::Elf)?;
+    builder.write("tmp/test.o")?;
 
     Ok(())
 }
+
 ```
 
 ## Documentation
