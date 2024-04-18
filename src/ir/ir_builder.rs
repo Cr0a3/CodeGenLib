@@ -35,8 +35,6 @@ impl IrFunctionBuilder {
     pub fn args(&mut self, args: Vec<(&str, u64)>) {
         let mut mod_args: Vec<((String, u64, Option<Register>), u64)> = vec![];
 
-        let mut index = 0;
-
         let mut reg_pasted_args = 0;
 
         let mut prev_size = 0;
@@ -53,7 +51,6 @@ impl IrFunctionBuilder {
 
             mod_args.push(((arg.0.into(), arg.1, reg), prev_size));
 
-            index += 1;
             prev_size += arg.1;
         }
 
@@ -62,15 +59,35 @@ impl IrFunctionBuilder {
         self.args = mod_args;
     }
 
+    /// !Needs to be called after setuped args !
     /// The input tuple values: `(String, u64)` represent:
     ///  * `String` -> The argument name
-    ///  * `u64` -> The argument size in bytes
+    ///  * `u64` -> The var size in bytes
     pub fn vars(&mut self, vars: Vec<(&str, u64)>) {
         let mut mod_vars: Vec<(String, u64)> = vec![];
 
-        for var in vars {
-            mod_vars.push((var.0.into(), var.1));
+        let mut stack_offset = 0;
+
+        for arg in self.args.iter() {
+            let name = &arg.0.0;
+            let size = arg.0.1;
+
+            if arg.0.2.is_some() {
+                self.generated.push( Store(arg.0.2.unwrap(), stack(-(stack_offset as i64  + 4)) ))
+            }
+
+            mod_vars.push( (name.to_string(), stack_offset));
+
+            stack_offset += size;
         }
+
+        for var in vars {
+            mod_vars.push((var.0.into(), stack_offset));
+
+            stack_offset += var.1;
+        }
+
+        
 
         self.vars = mod_vars;
     }
@@ -127,34 +144,18 @@ impl IrFunctionBuilder {
         Err(CodeGenLibError::VarNotExist(name))
     }
 
-    pub fn build_arg_add(
+    pub fn build_add(
         &mut self,
-        arg1: &str,
-        arg2: &str,
+        var1: &str,
+        var2: &str,
         result_var: &str,
     ) -> Result<(), CodeGenLibError> {
-        let arg1 = self.get_arg(arg1.into())?;
-        let arg2 = self.get_arg(arg2.into())?;
+        let var1 = self.get_var(var1.into())?;
+        let var2 = self.get_var(var2.into())?;
         let ret = self.get_var(result_var.into())?;
 
-        // Move first arg into rax
-        if arg1.0 .2.is_none() {
-            self.generated
-                .push(Load(Register::RAX, stack(-(arg1.1 as i64))));
-        } else {
-            self.generated
-                .push(MovReg(Register::RAX, arg1.0 .2.unwrap()));
-        }
-
-        // Move second arg into rbx
-        if arg2.0 .2.is_none() {
-            self.generated
-                .push(Load(Register::RBX, stack(-(arg2.1 as i64))));
-        } else {
-            self.generated
-                .push(MovReg(Register::RBX, arg2.0 .2.unwrap()));
-        }
-
+        self.generated.push(Load(Register::RAX, stack(-(var1.1 as i64 + 4)) ));
+        self.generated.push(Load(Register::RBX, stack(-(var2.1 as i64 + 4)) ));
         self.generated.push(AddReg(Register::RAX, Register::RBX));
         self.generated
             .push(Store(Register::RAX, stack(-(ret.1 as i64))));

@@ -14,7 +14,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("z", 4),
     ]);
 
-    add.build_arg_add("x", "y", "z")?;
+    add.build_add("x", "y", "z")?;
     add.build_return_var("z")?;
 
     add.set_public();
