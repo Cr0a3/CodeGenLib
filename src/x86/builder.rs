@@ -33,10 +33,7 @@ impl Builder {
         Ok(())
     }
 
-    pub fn write(
-        &mut self,
-        outpath: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn write(&mut self, outpath: &str) -> Result<(), Box<dyn std::error::Error>> {
         let mut obj = ObjectBuilder::new(outpath);
 
         let mut resolved_funcs: HashMap<String, Vec<u8>> = HashMap::new();

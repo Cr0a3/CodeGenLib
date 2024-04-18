@@ -33,7 +33,6 @@ pub enum AsmInstructionEnum {
     MulReg(Register, Register),
     MulMem(Register, MemoryOperand),
 
-    
     DivVal(Register, u64),
     DivReg(Register, Register),
     DivMem(Register, MemoryOperand),
@@ -63,7 +62,7 @@ pub fn adr(adress: i64) -> MemoryOperand {
 }
 
 pub fn arg(nr: u64, size: u64, prev_size: u64) -> MemoryOperand {
-    stack(( nr + size + prev_size + 4 ) as i64 - 1)
+    stack((nr + size + prev_size + 4) as i64 - 1)
 }
 
 pub fn arg32(nr: u64) -> Register {

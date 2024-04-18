@@ -6,7 +6,7 @@ use std::fmt;
 /// which stores the error information
 #[derive(Debug, Clone)]
 pub enum CodeGenLibError {
-    VarNotExist(String)
+    VarNotExist(String),
 }
 
 pub type Result<T> = std::result::Result<T, CodeGenLibError>;

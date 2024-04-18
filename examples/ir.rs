@@ -1,5 +1,6 @@
 use CodeGenLib::ir::IrBuilder;
 
+#[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut builder = IrBuilder::new();
 

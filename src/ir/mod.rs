@@ -6,8 +6,8 @@ use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, Instruction
 
 use crate::asm::AsmInstructionEnum;
 
-pub mod safe;
 mod ir_builder;
+pub mod safe;
 
 pub use ir_builder::IrBuilder;
 pub use safe::SafeCode;
@@ -316,14 +316,21 @@ pub fn resolve(
                 }
             }
 
-            AsmInstructionEnum::PushVal(value) => { vec![Instruction::with1(Code::Pushd_imm32, value)?] }
+            AsmInstructionEnum::PushVal(value) => {
+                vec![Instruction::with1(Code::Pushd_imm32, value)?]
+            }
 
-            AsmInstructionEnum::DivVal(_, _) => {vec![Instruction::with(Code::Nopq)]}
-            AsmInstructionEnum::DivReg(_, _) => {vec![Instruction::with(Code::Nopq)]},
-            AsmInstructionEnum::DivMem(_, _) => {vec![Instruction::with(Code::Nopq)]},
+            AsmInstructionEnum::DivVal(_, _) => {
+                vec![Instruction::with(Code::Nopq)]
+            }
+            AsmInstructionEnum::DivReg(_, _) => {
+                vec![Instruction::with(Code::Nopq)]
+            }
+            AsmInstructionEnum::DivMem(_, _) => {
+                vec![Instruction::with(Code::Nopq)]
+            }
         };
 
-        
         let block = InstructionBlock::new(&instr, 0x0000_1248_FC84_0000);
 
         let asm = BlockEncoder::encode(64, block, BlockEncoderOptions::NONE)?;
