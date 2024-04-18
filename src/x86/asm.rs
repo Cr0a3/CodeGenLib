@@ -33,6 +33,11 @@ pub enum AsmInstructionEnum {
     MulReg(Register, Register),
     MulMem(Register, MemoryOperand),
 
+    
+    DivVal(Register, u64),
+    DivReg(Register, Register),
+    DivMem(Register, MemoryOperand),
+
     Push(Register),
     PushVal(u32),
     Pop(Register),
