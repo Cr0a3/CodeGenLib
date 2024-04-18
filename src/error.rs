@@ -6,8 +6,7 @@ use std::fmt;
 /// which stores the error information
 #[derive(Debug, Clone)]
 pub enum CodeGenLibError {
-    JitFunctionsNoExtern,
-    AdrOutOfMem,
+    VarNotExist(String)
 }
 
 pub type Result<T> = std::result::Result<T, CodeGenLibError>;
@@ -15,10 +14,11 @@ pub type Result<T> = std::result::Result<T, CodeGenLibError>;
 impl fmt::Display for CodeGenLibError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match self {
-            CodeGenLibError::JitFunctionsNoExtern => "JitError: externs aren't allowed",
-            CodeGenLibError::AdrOutOfMem => "VarManager: you allocated to much memory",
+            CodeGenLibError::VarNotExist(x) => format!("var {x} doesn't exits"),
         };
 
         write!(f, "{}", msg)
     }
 }
+
+impl std::error::Error for CodeGenLibError {}

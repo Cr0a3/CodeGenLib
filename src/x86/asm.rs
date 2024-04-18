@@ -63,31 +63,23 @@ pub fn adr(adress: i64) -> MemoryOperand {
 }
 
 pub fn arg(nr: u64, size: u64, prev_size: u64) -> MemoryOperand {
-    MemoryOperand::new(
-        Register::RBP,
-        Register::None,
-        1,
-        ( nr + size + prev_size + 4 ) as i64 - 1,
-        1,
-        false,
-        Register::None,
-    )
+    stack(( nr + size + prev_size + 4 ) as i64 - 1)
 }
 
 pub fn arg32(nr: u64) -> Register {
     let arg1 = {
         if cfg!(target_os = "windows") {
-            Register::ECX
+            Register::RCX
         } else {
-            Register::EDI
+            Register::RDI
         }
     };
 
     let arg2 = {
         if cfg!(target_os = "windows") {
-            Register::EDX
+            Register::RDX
         } else {
-            Register::ESI
+            Register::RSI
         }
     };
 
@@ -102,11 +94,15 @@ pub fn arg32(nr: u64) -> Register {
 pub fn var(prev_size: u64) -> MemoryOperand {
     let displ = (prev_size + 4) as i64;
 
+    stack(-displ)
+}
+
+pub fn stack(pos: i64) -> MemoryOperand {
     MemoryOperand::new(
         Register::RBP,
         Register::None,
         1,
-        -displ,
+        pos,
         1,
         false,
         Register::None,
