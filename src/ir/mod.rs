@@ -7,10 +7,7 @@ use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, Instruction
 use crate::asm::AsmInstructionEnum;
 
 mod ir_builder;
-pub mod safe;
-
 pub use ir_builder::IrBuilder;
-pub use safe::SafeCode;
 
 pub fn resolve(
     funcs: Vec<String>,

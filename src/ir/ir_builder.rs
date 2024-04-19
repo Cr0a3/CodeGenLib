@@ -69,14 +69,15 @@ impl IrFunctionBuilder {
         let mut stack_offset = 0;
 
         for arg in self.args.iter() {
-            let name = &arg.0.0;
-            let size = arg.0.1;
+            let name = &arg.0 .0;
+            let size = arg.0 .1;
 
-            if arg.0.2.is_some() {
-                self.generated.push( Store(arg.0.2.unwrap(), stack(-(stack_offset as i64  + 4)) ))
+            if arg.0 .2.is_some() {
+                self.generated
+                    .push(Store(arg.0 .2.unwrap(), stack(-(stack_offset as i64 + 4))))
             }
 
-            mod_vars.push( (name.to_string(), stack_offset));
+            mod_vars.push((name.to_string(), stack_offset));
 
             stack_offset += size;
         }
@@ -86,8 +87,6 @@ impl IrFunctionBuilder {
 
             stack_offset += var.1;
         }
-
-        
 
         self.vars = mod_vars;
     }
@@ -154,8 +153,10 @@ impl IrFunctionBuilder {
         let var2 = self.get_var(var2.into())?;
         let ret = self.get_var(result_var.into())?;
 
-        self.generated.push(Load(Register::RAX, stack(-(var1.1 as i64 + 4)) ));
-        self.generated.push(Load(Register::RBX, stack(-(var2.1 as i64 + 4)) ));
+        self.generated
+            .push(Load(Register::RAX, stack(-(var1.1 as i64 + 4))));
+        self.generated
+            .push(Load(Register::RBX, stack(-(var2.1 as i64 + 4))));
         self.generated.push(AddReg(Register::RAX, Register::RBX));
         self.generated
             .push(Store(Register::RAX, stack(-(ret.1 as i64))));

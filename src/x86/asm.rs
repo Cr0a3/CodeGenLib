@@ -1,6 +1,6 @@
 use iced_x86::{MemoryOperand, Register};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AsmInstructionEnum {
     Ret,
     Nop,
