@@ -6,7 +6,7 @@ pub enum AsmInstructionEnum {
     Nop,
     Endbr64,
 
-    MovVal(Register, u64),
+    MovVal(Register, i64),
     MovReg(Register, Register),
 
     Store(Register, MemoryOperand),
@@ -21,19 +21,19 @@ pub enum AsmInstructionEnum {
     IncMem(MemoryOperand),
     DecMem(MemoryOperand),
 
-    AddVal(Register, u64),
+    AddVal(Register, i64),
     AddReg(Register, Register),
     AddMem(Register, MemoryOperand),
 
-    SubVal(Register, u64),
+    SubVal(Register, i64),
     SubReg(Register, Register),
     SubMem(Register, MemoryOperand),
 
-    MulVal(Register, u64),
+    MulVal(Register, i64),
     MulReg(Register, Register),
     MulMem(Register, MemoryOperand),
 
-    DivVal(Register, u64),
+    DivVal(Register, i64),
     DivReg(Register, Register),
     DivMem(Register, MemoryOperand),
 
@@ -46,7 +46,7 @@ pub enum DataTyp {
     Int32,
     Int64,
 
-    Custom(u64),
+    Custom(i64),
 }
 
 pub fn adr(adress: i64) -> MemoryOperand {
@@ -61,11 +61,11 @@ pub fn adr(adress: i64) -> MemoryOperand {
     )
 }
 
-pub fn arg(nr: u64, size: u64, prev_size: u64) -> MemoryOperand {
+pub fn arg(nr: i64, size: i64, prev_size: i64) -> MemoryOperand {
     stack((nr + size + prev_size + 4) as i64 - 1)
 }
 
-pub fn arg32(nr: u64) -> Register {
+pub fn arg32(nr: i64) -> Register {
     let arg1 = {
         if cfg!(target_os = "windows") {
             Register::RCX
@@ -90,7 +90,7 @@ pub fn arg32(nr: u64) -> Register {
     }
 }
 
-pub fn var(prev_size: u64) -> MemoryOperand {
+pub fn var(prev_size: i64) -> MemoryOperand {
     let displ = (prev_size + 4) as i64;
 
     stack(-displ)

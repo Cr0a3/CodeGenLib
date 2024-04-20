@@ -25,6 +25,11 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
                 AddVal(reg, _) => reg,
                 _ => Register::None,
             }));
+        } else if matches!(instr, AddVal(reg, -1) if instr == AddVal(reg, -1)) {
+            opt.push_back(Dec(match instr {
+                AddVal(reg, _) => reg,
+                _ => Register::None,
+            }));
         } else {
             opt.push_back(instr);
         }
