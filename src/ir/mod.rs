@@ -4,13 +4,14 @@ use formatic::{Decl, Link, Scope};
 
 use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, InstructionBlock};
 
-use crate::asm::AsmInstructionEnum;
+use crate::asm::{adr, AsmInstructionEnum};
 
 mod ir_builder;
 pub use ir_builder::IrBuilder;
 
 pub fn resolve(
     funcs: Vec<String>,
+    labels: Vec<String>,
     code: &Vec<AsmInstructionEnum>,
 ) -> Result<(Vec<u8>, Vec<Link>, HashMap<String, Decl>), Box<dyn Error>> {
     let mut decls: HashMap<String, Decl> = HashMap::new();
@@ -62,7 +63,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                vec![Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0)]
+                vec![Instruction::with1(Code::Call_rm64, adr(0))?]
             }
 
             AsmInstructionEnum::Jmp(target) => {
@@ -78,7 +79,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                vec![Instruction::with_declare_byte_5(0xEB, 0, 0, 0, 0)]
+                vec![Instruction::with1(Code::Jmp_rm64, adr(0))?]
             }
 
             AsmInstructionEnum::MovVal(reg, value) => {
@@ -325,6 +326,21 @@ pub fn resolve(
             }
             AsmInstructionEnum::DivMem(_, _) => {
                 vec![Instruction::with(Code::Nopq)]
+            }
+            AsmInstructionEnum::PushLabel(name) => {
+                let name = name.to_string();
+
+                if !decls.contains_key(&name) && !labels.contains(&name) {
+                    decls.insert(name.clone(), Decl::Data(Scope::Import));
+                };
+
+                links.push(Link {
+                    from: String::new(),
+                    to: name,
+                    at: generated.len() + 1,
+                });
+
+                vec![Instruction::with1(Code::Push_rm64, adr(0))?]
             }
         };
 

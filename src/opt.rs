@@ -9,7 +9,7 @@ macro_rules! instr {
 }
 
 /// Optimizes and makes the incoming ir safe
-pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>, Box<dyn Error>> {
+pub fn Optimize<'a>(code: &'a Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum<'a>>, Box<dyn Error>> {
     let mut opt: VecDeque<AsmInstructionEnum> = VecDeque::new();
 
     let mut instr = Nop;
@@ -18,6 +18,8 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
     let mut skip = false; // skipes the next element
 
     for _instr in code {
+        let _instr = _instr.to_owned();
+
         if skip {
             skip = false;
         } else if matches!(instr, AddVal(reg, 1) if instr == AddVal(reg, 1)) {
@@ -30,6 +32,8 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
                 AddVal(reg, _) => reg,
                 _ => Register::None,
             }));
+        } else if _instr == Ret {
+            break;
         } else {
             opt.push_back(instr);
         }
@@ -40,21 +44,18 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
 
     opt.push_back(instr); // last element gets skipped so
 
-    // Setup the stack and add ret
+    // Setup the stack and add
     if !(opt[0] == Endbr64
         && opt[1] == Push(Register::RBP)
         && opt[2] == MovReg(Register::RBP, Register::RSP))
     {
-        // front
         opt.push_front(MovReg(Register::RBP, Register::RSP));
         opt.push_front(Push(Register::RBP));
         opt.push_front(Endbr64);
     }
 
-    if !(opt[opt.len() - 1] == Pop(Register::RBP) && opt[opt.len() - 1] == Ret) {
-        opt.push_back(AsmInstructionEnum::Pop(Register::RBP));
-        opt.push_back(AsmInstructionEnum::Ret);
-    }
+    opt.push_back(AsmInstructionEnum::Pop(Register::RBP)); // for stack safty
+    opt.push_back(AsmInstructionEnum::Ret);
 
     Ok(opt.into())
 }

@@ -7,6 +7,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum CodeGenLibError {
     VarNotExist(String),
+    FuncNotExist(String),
 }
 
 pub type Result<T> = std::result::Result<T, CodeGenLibError>;
@@ -15,6 +16,7 @@ impl fmt::Display for CodeGenLibError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match self {
             CodeGenLibError::VarNotExist(x) => format!("var {x} doesn't exits"),
+            CodeGenLibError::FuncNotExist(x) => format!("func {x} doesn't exits"),
         };
 
         write!(f, "{}", msg)

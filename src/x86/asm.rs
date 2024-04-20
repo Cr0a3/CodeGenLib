@@ -1,7 +1,7 @@
 use iced_x86::{MemoryOperand, Register};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AsmInstructionEnum {
+pub enum AsmInstructionEnum<'a> {
     Ret,
     Nop,
     Endbr64,
@@ -12,8 +12,8 @@ pub enum AsmInstructionEnum {
     Store(Register, MemoryOperand),
     Load(Register, MemoryOperand),
 
-    Call(&'static str),
-    Jmp(&'static str),
+    Call(&'a str),
+    Jmp(&'a str),
 
     Inc(Register),
     Dec(Register),
@@ -39,6 +39,7 @@ pub enum AsmInstructionEnum {
 
     Push(Register),
     PushVal(u32),
+    PushLabel(&'a str),
     Pop(Register),
 }
 
@@ -66,25 +67,44 @@ pub fn arg(nr: i64, size: i64, prev_size: i64) -> MemoryOperand {
 }
 
 pub fn arg32(nr: i64) -> Register {
-    let arg1 = {
-        if cfg!(target_os = "windows") {
-            Register::RCX
-        } else {
-            Register::RDI
-        }
-    };
+    let windows = vec![Register::ECX, Register::EDX, Register::R8D,  Register::R9D];
+    let linux   = vec![Register::EDI, Register::ESI, Register::EDX, Register::ECX];
 
-    let arg2 = {
+    let regs = {
         if cfg!(target_os = "windows") {
-            Register::RDX
+            windows
         } else {
-            Register::RSI
+            linux
         }
     };
 
     match nr {
-        1 => arg2,
-        2 => arg1,
+        1 => regs[0],
+        2 => regs[1],
+        3 => regs[2],
+        4 => regs[3],
+
+        _ => Register::None,
+    }
+}
+
+pub fn arg64(nr: i64) -> Register {
+    let windows = vec![Register::RCX, Register::RDX, Register::R8,  Register::R9];
+    let linux   = vec![Register::RDI, Register::RSI, Register::RDX, Register::RCX];
+
+    let regs = {
+        if cfg!(target_os = "windows") {
+            windows
+        } else {
+            linux
+        }
+    };
+
+    match nr {
+        1 => regs[0],
+        2 => regs[1],
+        3 => regs[2],
+        4 => regs[3],
 
         _ => Register::None,
     }

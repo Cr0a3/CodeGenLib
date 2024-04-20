@@ -6,8 +6,10 @@ use std::collections::HashMap;
 ///
 /// It also create the object file via the `formatic` crate
 pub struct Builder {
-    funcs: HashMap<String, (bool, Vec<AsmInstructionEnum>)>,
+    funcs: HashMap<String, (bool, Vec<AsmInstructionEnum<'static>>)>,
+    labels: HashMap<String, (bool, Vec<u8>)>,
     func_names: Vec<String>,
+    label_names: Vec<String>,
 }
 
 impl Builder {
@@ -15,7 +17,9 @@ impl Builder {
     pub fn new() -> Self {
         Self {
             funcs: HashMap::new(),
+            labels: HashMap::new(),
             func_names: vec![],
+            label_names: vec![],
         }
     }
 
@@ -25,11 +29,21 @@ impl Builder {
         public: bool,
         code: Vec<AsmInstructionEnum>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let code = Optimize(code)?;
+        let code = Optimize(&code)?;
         self.funcs.insert(name.into(), (public, code));
         self.func_names.push(name.into());
 
         Ok(())
+    }
+
+    pub fn define_label(
+        &mut self,
+        name: &str,
+        public: bool,
+        data: Vec<u8>,
+    ) {
+        self.labels.insert(name.into(), (public, data));
+        self.label_names.push(name.into());
     }
 
     pub fn write(&mut self, outpath: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -41,7 +55,7 @@ impl Builder {
         for func in self.funcs.iter() {
             let ir = &func.1 .1;
 
-            let resolved = resolve(self.func_names.clone(), &ir)?;
+            let resolved = resolve(self.func_names.clone(), self.label_names.clone(), &ir)?;
 
             resolved_funcs.insert(func.0.to_owned(), resolved.0);
 
@@ -75,6 +89,20 @@ impl Builder {
             obj.add_decl(&func.0, decl);
 
             obj.define(&func.0, func.1);
+        }
+
+        // Defining labels
+        for label in self.labels.iter() {
+            let name = format!(".L_{}", label.0);
+
+            obj.add_decl(&name, Decl::Data({
+                match label.1.0 {
+                    true => Scope::Export,
+                    false => Scope::Private,
+                }
+            }));
+
+            obj.define(&name, label.1.1.to_owned());
         }
 
         obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)?;
