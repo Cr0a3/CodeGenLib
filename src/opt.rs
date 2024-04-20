@@ -20,11 +20,11 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
     for _instr in code {
         if skip {
             skip = false;
-        } else if instr!(instr => Load; last_instr => Store => s_reg, s_mem) {
-            opt.push_back(last_instr);
-        } else if instr!(instr => Store; last_instr =>  Load => s_reg, s_mem) {
-            opt.push_back(instr);
-            skip = true;
+        } else if matches!(instr, AddVal(reg, 1) if instr == AddVal(reg, 1)) {
+            opt.push_back(Inc(match instr {
+                AddVal(reg, _) => reg,
+                _ => Register::None,
+            }));
         } else {
             opt.push_back(instr);
         }
