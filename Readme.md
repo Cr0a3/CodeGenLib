@@ -38,5 +38,3 @@ Check out our documentation on https://docs.rs/CodeGenLib/latest/CodeGenLib/
 
 ## Copyright
 Copyright (C) 2024 Cr0a3
-
-(!) Uses the faerie crate (https://crates.io/crates/faerie)
