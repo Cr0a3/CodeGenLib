@@ -19,7 +19,7 @@ pub fn resolve(
     let mut generated = vec![];
 
     for instruction in code {
-        let instr: Vec<Instruction> = match *instruction {
+        let instr: Vec<Instruction> = match instruction.to_owned() {
             AsmInstructionEnum::Ret => vec![Instruction::with(Code::Retnq)],
 
             AsmInstructionEnum::Endbr64 => vec![Instruction::with(Code::Endbr64)],

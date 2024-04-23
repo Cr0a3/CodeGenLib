@@ -6,12 +6,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let add = builder.add("add");
     add.args(vec![
-        ("x", 4),
-        ("y", 4),
+        ("x", 8),
+        ("y", 8),
     ]);
 
     add.vars(vec![
-        ("z", 4),
+        ("z", 8),
     ]);
 
     add.build_add("x", "y", "z")?;

@@ -9,17 +9,14 @@ macro_rules! instr {
 }
 
 /// Optimizes and makes the incoming ir safe
-pub fn Optimize<'a>(code: &'a Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum<'a>>, Box<dyn Error>> {
+pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>, Box<dyn Error>> {
     let mut opt: VecDeque<AsmInstructionEnum> = VecDeque::new();
 
-    let mut instr = Nop;
-    let mut last_instr = Nop;
+    let mut instr = Nop; // Last instruction
 
     let mut skip = false; // skipes the next element
 
     for _instr in code {
-        let _instr = _instr.to_owned();
-
         if skip {
             skip = false;
         } else if matches!(instr, AddVal(reg, 1) if instr == AddVal(reg, 1)) {
@@ -38,7 +35,6 @@ pub fn Optimize<'a>(code: &'a Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstruct
             opt.push_back(instr);
         }
 
-        last_instr = instr;
         instr = _instr.to_owned();
     }
 

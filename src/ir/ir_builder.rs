@@ -10,26 +10,26 @@ use crate::{
     Builder,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ArgTyp<'a> {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ArgTyp {
     Int32(u32),
     Int64(u64),
-    Str(&'a str),
+    Str(String),
 }
 
-pub struct IrFunctionBuilder {
-    pub generated: Vec<AsmInstructionEnum<'static>>,
+pub struct IrFunctionBuilder<'a> {
+    pub generated: Vec<AsmInstructionEnum>,
     pub name: String,
     args: Vec<((String, u64, Option<Register>), u64)>,
     vars: Vec<(String, i64)>, // i64 -> stack offset
-    funcs: Vec<(String, Vec<ArgTyp<'static>>)>,
+    funcs: Vec<(String, Vec<ArgTyp>)>,
     public: bool,
 
-    builder: &'static mut Builder
+    builder: &'a mut Builder
 }
 
-impl IrFunctionBuilder {
-    pub fn new(name: &str, builder: &'static mut Builder) -> Self {
+impl<'a> IrFunctionBuilder<'a> {
+    pub fn new(name: &'a str, builder: &'a mut Builder) -> Self {
         Self {
             generated: vec![],
             name: name.into(),
@@ -54,7 +54,7 @@ impl IrFunctionBuilder {
 
         for arg in args {
             let reg: Option<Register> = {
-                if reg_pasted_args < 4 && (arg.1 <= 8) {
+                if reg_pasted_args < 8 && (arg.1 <= 8) {
                     reg_pasted_args += 1;
                     Some(arg32(reg_pasted_args))
                 } else {
@@ -80,7 +80,7 @@ impl IrFunctionBuilder {
         let mut mod_vars: Vec<(String, i64)> = vec![];
         let mut stack_args: Vec<(String, u64)> = vec![];
 
-        let mut stack_offset: i64 = 4;
+        let mut stack_offset: i64 = 8;
 
         for arg in self.args.iter() {
             let name = &arg.0.0;
@@ -114,7 +114,7 @@ impl IrFunctionBuilder {
         self.vars = mod_vars;
     }
 
-    pub fn efuncs(&mut self, funcs: Vec<(String, Vec<ArgTyp<'static>>)>) {
+    pub fn efuncs(&mut self, funcs: Vec<(String, Vec<ArgTyp>)>) {
         self.funcs = funcs;
     }
 
@@ -203,7 +203,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
-    pub fn gen_x_arg_for_func(&mut self, name: &'static str, index: usize, arg: ArgTyp) -> Result<(), CodeGenLibError> {
+    pub fn gen_x_arg_for_func(&mut self, name: & str, index: usize, arg: ArgTyp) -> Result<(), CodeGenLibError> {
         // prepare func
         let mut func = (String::new(), vec![]);
 
@@ -231,7 +231,7 @@ impl IrFunctionBuilder {
             }
         }
 
-        if used_regs < 4 {
+        if used_regs < 8 {
             match arg {
                 ArgTyp::Int32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
                 ArgTyp::Int64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
@@ -242,14 +242,14 @@ impl IrFunctionBuilder {
             let label_name = format!(".L{}.{}.{}", self.name, name, index);
 
             self.generated.push(PushLabel(
-                &label_name
+                label_name
             ));
         }
 
         Ok(())
     }
 
-    pub fn build_call(&mut self, func: &'static str, args: Vec<ArgTyp>) -> Result<(), Box<dyn Error>> {
+    pub fn build_call(&mut self, func: & str, args: Vec<ArgTyp>) -> Result<(), Box<dyn Error>> {
         let mut index = 0;
 
         for arg in args {
@@ -258,7 +258,7 @@ impl IrFunctionBuilder {
             index += 1;
         } 
 
-        self.generated.push(Call(func));
+        self.generated.push(Call(func.into()));
 
         Ok(())
     }
@@ -268,12 +268,12 @@ impl IrFunctionBuilder {
     }
 }
 
-pub struct IrBuilder {
-    functs: Vec<IrFunctionBuilder>,
+pub struct IrBuilder<'a> {
+    functs: Vec<IrFunctionBuilder<'a>>,
     builder: Builder,
 }
 
-impl IrBuilder {
+impl<'a> IrBuilder<'a> {
     pub fn new() -> Self {
         Self { 
             functs: vec![], 
@@ -281,7 +281,7 @@ impl IrBuilder {
         }
     }
 
-    pub fn add(&'static mut self, name: &str) -> &mut IrFunctionBuilder {
+    pub fn add(& mut self, name: &'a str) -> &'a mut IrFunctionBuilder {
         let func = IrFunctionBuilder::new(name, &mut self.builder);
 
         self.functs.push(func);

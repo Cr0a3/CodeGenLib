@@ -5,8 +5,9 @@ use std::collections::HashMap;
 /// The builder is a wrapper around the entire code generation
 ///
 /// It also create the object file via the `formatic` crate
+#[derive(Debug, Clone)]
 pub struct Builder {
-    funcs: HashMap<String, (bool, Vec<AsmInstructionEnum<'static>>)>,
+    funcs: HashMap<String, (bool, Vec<AsmInstructionEnum>)>,
     labels: HashMap<String, (bool, Vec<u8>)>,
     func_names: Vec<String>,
     label_names: Vec<String>,
@@ -29,8 +30,8 @@ impl Builder {
         public: bool,
         code: Vec<AsmInstructionEnum>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let code = Optimize(&code)?;
-        self.funcs.insert(name.into(), (public, code));
+        let opt_code = Optimize(code)?;
+        self.funcs.insert(name.into(), (public, opt_code));
         self.func_names.push(name.into());
 
         Ok(())

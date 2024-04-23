@@ -6,7 +6,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     let mut builder = Builder::new();
 
     builder.define("call", true, vec![
-        Call("callme"),
+        Call("callme".into()),
         MovVal(Register::EAX, 5),
     ])?;
 

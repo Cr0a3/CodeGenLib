@@ -1,7 +1,7 @@
 use iced_x86::{MemoryOperand, Register};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AsmInstructionEnum<'a> {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AsmInstructionEnum {
     Ret,
     Nop,
     Endbr64,
@@ -12,8 +12,8 @@ pub enum AsmInstructionEnum<'a> {
     Store(Register, MemoryOperand),
     Load(Register, MemoryOperand),
 
-    Call(&'a str),
-    Jmp(&'a str),
+    Call(String),
+    Jmp(String),
 
     Inc(Register),
     Dec(Register),
@@ -39,7 +39,7 @@ pub enum AsmInstructionEnum<'a> {
 
     Push(Register),
     PushVal(u32),
-    PushLabel(&'a str),
+    PushLabel(String),
     Pop(Register),
 }
 
