@@ -6,22 +6,23 @@ A libary to generate x86-64Bit machine code
 
 ## Example
 ```rust
-use CodeGenLib::ir::IrBuilder;
+use CodeGenLib::prelude::*;
 
+#[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut builder = IrBuilder::new();
 
     let add = builder.add("add");
     add.args(vec![
-        ("x", 4),
-        ("y", 4),
+        ("x", Type::uInt64(0) ),
+        ("y", Type::uInt64(0) ),
     ]);
 
     add.vars(vec![
-        ("z", 4),
+        ("z", Type::uInt64(0) ),
     ]);
 
-    add.build_arg_add("x", "y", "z")?;
+    add.build_add("x", "y", "z")?;
     add.build_return_var("z")?;
 
     add.set_public();
@@ -30,7 +31,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
 ```
 
 ## Documentation

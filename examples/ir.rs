@@ -1,4 +1,4 @@
-use CodeGenLib::ir::IrBuilder;
+use CodeGenLib::prelude::*;
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -6,12 +6,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let add = builder.add("add");
     add.args(vec![
-        ("x", 8),
-        ("y", 8),
+        ("x", Type::uInt64(0) ),
+        ("y", Type::uInt64(0) ),
     ]);
 
     add.vars(vec![
-        ("z", 8),
+        ("z", Type::uInt64(0) ),
     ]);
 
     add.build_add("x", "y", "z")?;

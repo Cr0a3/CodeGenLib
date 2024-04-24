@@ -10,12 +10,7 @@ use crate::{
     Builder,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ArgTyp {
-    Int32(u32),
-    Int64(u64),
-    Str(String),
-}
+pub use super::Type;
 
 #[derive(Debug, Clone)]
 pub struct IrFunctionBuilder {
@@ -23,14 +18,12 @@ pub struct IrFunctionBuilder {
     pub name: String,
     args: Vec<((String, u64, Option<Register>), u64)>,
     vars: Vec<(String, i64)>, // i64 -> stack offset
-    funcs: Vec<(String, Vec<ArgTyp>)>,
+    funcs: Vec<(String, Vec<Type>)>,
     public: bool,
-
-    builder: Builder
 }
 
 impl IrFunctionBuilder {
-    pub fn new(name: &str, builder: &mut Builder) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
             generated: vec![],
             name: name.into(),
@@ -38,15 +31,13 @@ impl IrFunctionBuilder {
             vars: vec![],
             funcs: vec![],
             public: false,
-
-            builder: builder.to_owned(),
         }
     }
 
     /// The input tuple values: `(String, u64)` represent:
     ///  * `String` -> The argument name
     ///  * `u64` -> The argument size in bytes
-    pub fn args(&mut self, args: Vec<(&str, u64)>) {
+    pub fn args(&mut self, args: Vec<(&str, Type)>) {
         let mut mod_args: Vec<((String, u64, Option<Register>), u64)> = vec![];
 
         let mut reg_pasted_args = 0;
@@ -55,7 +46,7 @@ impl IrFunctionBuilder {
 
         for arg in args {
             let reg: Option<Register> = {
-                if reg_pasted_args < 8 && (arg.1 <= 8) {
+                if reg_pasted_args < 8 && (arg.1.size() <= 8) {
                     reg_pasted_args += 1;
                     Some(arg32(reg_pasted_args))
                 } else {
@@ -63,9 +54,9 @@ impl IrFunctionBuilder {
                 }
             };
 
-            mod_args.push(((arg.0.into(), arg.1, reg), prev_size));
+            mod_args.push(((arg.0.into(), arg.1.size(), reg), prev_size));
 
-            prev_size += arg.1;
+            prev_size += arg.1.size();
         }
 
         println!("{:?}", mod_args);
@@ -77,7 +68,7 @@ impl IrFunctionBuilder {
     /// The input tuple values: `(String, u64)` represent:
     ///  * `String` -> The argument name
     ///  * `u64` -> The var size in bytes
-    pub fn vars(&mut self, vars: Vec<(&str, u64)>) {
+    pub fn vars(&mut self, vars: Vec<(&str, Type)>) {
         let mut mod_vars: Vec<(String, i64)> = vec![];
         let mut stack_args: Vec<(String, u64)> = vec![];
 
@@ -107,7 +98,7 @@ impl IrFunctionBuilder {
         for var in vars {
             mod_vars.push((var.0.into(), -stack_offset));
 
-            stack_offset += var.1 as i64;
+            stack_offset += var.1.size() as i64;
         }
 
         println!("{:?}", &mod_vars);
@@ -115,7 +106,7 @@ impl IrFunctionBuilder {
         self.vars = mod_vars;
     }
 
-    pub fn efuncs(&mut self, funcs: Vec<(String, Vec<ArgTyp>)>) {
+    pub fn efuncs(&mut self, funcs: Vec<(String, Vec<Type>)>) {
         self.funcs = funcs;
     }
 
@@ -204,9 +195,9 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
-    pub fn gen_x_arg_for_func(&mut self, name: & str, index: usize, arg: ArgTyp) -> Result<(), CodeGenLibError> {
+    pub fn gen_x_arg_for_func(&mut self, name: &str, index: usize, arg: Type) -> Result<(), CodeGenLibError> {
         // prepare func
-        let mut func = (String::new(), vec![]);
+        let mut func: (String, Vec<Type>) = (String::new(), vec![]);
 
         for _func in self.funcs.iter() {
             if _func.0 == name {
@@ -220,22 +211,17 @@ impl IrFunctionBuilder {
         let mut used_regs = 0;
 
         for arg in func.1 {
-            if {
-                match arg {
-                    ArgTyp::Int32(_) => true,
-                    ArgTyp::Int64(_) => true,
-                    _ => false,
-
-                }
-            } {
+            if arg.in_reg() {
                 used_regs += 1;
             }
         }
 
         if used_regs < 8 {
             match arg {
-                ArgTyp::Int32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
-                ArgTyp::Int64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
+                Type::uInt32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
+                Type::iInt32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
+                Type::uInt64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
+                Type::iInt64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
                 _ => {},
             };
 
@@ -250,7 +236,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
-    pub fn build_call(&mut self, func: & str, args: Vec<ArgTyp>) -> Result<(), Box<dyn Error>> {
+    pub fn build_call(&mut self, func: & str, args: Vec<Type>) -> Result<(), Box<dyn Error>> {
         let mut index = 0;
 
         for arg in args {
@@ -284,7 +270,7 @@ impl IrBuilder {
 
     pub fn add(& mut self, name: &str) -> &mut IrFunctionBuilder {
         self.functs.push(
-            IrFunctionBuilder::new(name, &mut self.build)
+            IrFunctionBuilder::new(name)
         );
 
         self.functs.last_mut().unwrap()

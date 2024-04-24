@@ -45,6 +45,11 @@ pub mod IR {
 
 pub use opt::Optimize;
 
+pub mod prelude {
+    pub use crate::ir::IrBuilder;
+    pub use crate::ir::Type;
+}
+
 //#[cfg(feature = "jit")]
 //pub use jit::typed::JitRuntime as Jit;
 

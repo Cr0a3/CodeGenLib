@@ -7,8 +7,10 @@ use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, Instruction
 use crate::asm::{adr, AsmInstructionEnum};
 
 mod ir_builder;
+mod typ;
 pub use ir_builder::IrBuilder;
 pub use ir_builder::IrFunctionBuilder;
+pub use typ::Type;
 
 pub fn resolve(
     funcs: Vec<String>,
