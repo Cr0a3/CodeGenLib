@@ -66,7 +66,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                vec![Instruction::with1(Code::Call_rm64, adr(0))?]
+                vec![Instruction::with_declare_byte_5(0xE8, 0, 0, 0, 0)]
             }
 
             AsmInstructionEnum::Jmp(target) => {
@@ -82,7 +82,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                vec![Instruction::with1(Code::Jmp_rm64, adr(0))?]
+                vec![Instruction::with_declare_byte_5(0xE9, 0, 0, 0, 0)]
             }
 
             AsmInstructionEnum::MovVal(reg, value) => {
@@ -111,6 +111,22 @@ pub fn resolve(
                 } else {
                     vec![Instruction::with(Code::Nopq)]
                 }
+            }
+
+            AsmInstructionEnum::MovPtr(src, target) => {
+                let target = target.to_string();
+
+                if !decls.contains_key(&target) && !funcs.contains(&target) {
+                    decls.insert(target.clone(), Decl::Data(Scope::Import));
+                };
+
+                links.push(Link {
+                    from: String::new(),
+                    to: target,
+                    at: generated.len() + 2,
+                });
+
+                vec![Instruction::with2(Code::Mov_r64_rm64, src, 0)?]
             }
 
             AsmInstructionEnum::Load(reg, mem) => {
@@ -344,6 +360,22 @@ pub fn resolve(
                 });
 
                 vec![Instruction::with1(Code::Push_rm64, adr(0))?]
+            }
+
+            AsmInstructionEnum::PushPtr(target) => {
+                let target = target.to_string();
+
+                if !decls.contains_key(&target) && !funcs.contains(&target) {
+                    decls.insert(target.clone(), Decl::Data(Scope::Import));
+                };
+
+                links.push(Link {
+                    from: String::new(),
+                    to: target,
+                    at: generated.len() + 1,
+                });
+
+                vec![Instruction::with1(Code::Pushq_imm32, 0)?]
             }
         };
 

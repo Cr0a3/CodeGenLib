@@ -94,7 +94,7 @@ impl Builder {
 
         // Defining labels
         for label in self.labels.iter() {
-            let name = format!(".L_{}", label.0);
+            let name = format!(".L{}", label.0);
 
             obj.add_decl(&name, Decl::Data({
                 match label.1.0 {

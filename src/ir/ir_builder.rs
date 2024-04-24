@@ -20,10 +20,12 @@ pub struct IrFunctionBuilder {
     vars: Vec<(String, i64)>, // i64 -> stack offset
     funcs: Vec<(String, Vec<Type>)>,
     public: bool,
+
+    builder: Builder,
 }
 
 impl IrFunctionBuilder {
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: &str, builder: &mut Builder) -> Self {
         Self {
             generated: vec![],
             name: name.into(),
@@ -31,6 +33,7 @@ impl IrFunctionBuilder {
             vars: vec![],
             funcs: vec![],
             public: false,
+            builder: builder.to_owned(),
         }
     }
 
@@ -106,8 +109,15 @@ impl IrFunctionBuilder {
         self.vars = mod_vars;
     }
 
-    pub fn efuncs(&mut self, funcs: Vec<(String, Vec<Type>)>) {
-        self.funcs = funcs;
+    pub fn efuncs(&mut self, funcs: Vec<(&str, Vec<Type>)>) {
+
+        let mut mod_funcs: Vec<(String, Vec<Type>)> = vec![];
+
+        for func in funcs {
+            mod_funcs.push((func.0.into(), func.1));
+        }
+
+        self.funcs = mod_funcs;
     }
 
     /// Throws error if given argument doesn't exists
@@ -216,27 +226,51 @@ impl IrFunctionBuilder {
             }
         }
 
-        if used_regs < 8 {
+        if used_regs <= 4 {
             match arg {
-                Type::uInt32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
-                Type::iInt32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
-                Type::uInt64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
-                Type::iInt64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
-                _ => {},
+                Type::u32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
+                Type::i32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
+                Type::u64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
+                Type::i64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
+                Type::Bytes(b) => {
+                    let label_name = format!(".L{}.{}.{}", self.name, name, index);
+        
+                    self.generated.push(PushLabel(
+                        label_name
+                    ));},
+                Type::Str(content) => {
+                    let label_name = format!("{}.{}.{}", self.name, name, index);
+
+                    self.builder.define_label(&label_name, false, content);
+
+                    self.generated.push(MovPtr(arg64(index as i64), label_name));
+                },
             };
 
         } else {
-            let label_name = format!(".L{}.{}.{}", self.name, name, index);
+            match arg {
+                Type::Str(content) => {
+                    let label_name = format!("{}.{}.{}", self.name, name, index);
 
-            self.generated.push(PushLabel(
-                label_name
-            ));
+                    self.builder.define_label(&label_name, false, content);
+
+                    self.generated.push(PushPtr(label_name));
+                },
+
+                _ => {
+                    let label_name = format!(".L{}.{}.{}", self.name, name, index);
+        
+                    self.generated.push(PushLabel(
+                        label_name
+                    ));
+                }
+            }
         }
 
         Ok(())
     }
 
-    pub fn build_call(&mut self, func: & str, args: Vec<Type>) -> Result<(), Box<dyn Error>> {
+    pub fn build_call(&mut self, func: &str, args: Vec<Type>) -> Result<(), Box<dyn Error>> {
         let mut index = 0;
 
         for arg in args {
@@ -268,9 +302,9 @@ impl IrBuilder {
         }
     }
 
-    pub fn add(& mut self, name: &str) -> &mut IrFunctionBuilder {
+    pub fn add(&mut self, name: &str) -> &mut IrFunctionBuilder {
         self.functs.push(
-            IrFunctionBuilder::new(name)
+            IrFunctionBuilder::new(name, &mut self.build)
         );
 
         self.functs.last_mut().unwrap()

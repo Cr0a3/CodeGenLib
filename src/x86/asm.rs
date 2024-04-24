@@ -8,6 +8,7 @@ pub enum AsmInstructionEnum {
 
     MovVal(Register, i64),
     MovReg(Register, Register),
+    MovPtr(Register, String),
 
     Store(Register, MemoryOperand),
     Load(Register, MemoryOperand),
@@ -40,6 +41,8 @@ pub enum AsmInstructionEnum {
     Push(Register),
     PushVal(u32),
     PushLabel(String),
+    PushPtr(String),
+
     Pop(Register),
 }
 
