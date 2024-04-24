@@ -7,10 +7,10 @@ use std::collections::HashMap;
 /// It also create the object file via the `formatic` crate
 #[derive(Debug, Clone)]
 pub struct Builder {
-    funcs: HashMap<String, (bool, Vec<AsmInstructionEnum>)>,
-    labels: HashMap<String, (bool, Vec<u8>)>,
-    func_names: Vec<String>,
-    label_names: Vec<String>,
+    pub funcs: HashMap<String, (bool, Vec<AsmInstructionEnum>)>,
+    pub labels: HashMap<String, (bool, Vec<u8>)>,
+    pub func_names: Vec<String>,
+    pub label_names: Vec<String>,
 }
 
 impl Builder {
@@ -108,5 +108,26 @@ impl Builder {
 
         obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)?;
         Ok(())
+    }
+
+    /// Adds the symbols/links/etc. from the other builder into the current if they doesn't exits
+    pub fn sync(&mut self, other: &Builder) {
+        for label in other.labels.keys() {
+            let data = other.labels.get(label).unwrap().to_owned();
+
+            if ! self.labels.contains_key(label) {
+                self.labels.insert(label.to_owned(), data);
+                self.label_names.push(label.to_owned());
+            }
+        }
+
+        for func in other.funcs.keys() {
+            let data = other.funcs.get(func).unwrap().to_owned();
+
+            if ! self.funcs.contains_key(func) {
+                self.funcs.insert(func.to_owned(), data);
+                self.func_names.push(func.to_owned());
+            }
+        }
     }
 }

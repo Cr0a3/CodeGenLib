@@ -1,2 +1,4 @@
 /target
-/temp
+/tmp/ir.o
+/tmp/asm.o
+/a.exe

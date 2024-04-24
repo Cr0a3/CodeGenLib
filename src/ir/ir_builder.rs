@@ -17,7 +17,8 @@ pub enum ArgTyp {
     Str(String),
 }
 
-pub struct IrFunctionBuilder<'a> {
+#[derive(Debug, Clone)]
+pub struct IrFunctionBuilder {
     pub generated: Vec<AsmInstructionEnum>,
     pub name: String,
     args: Vec<((String, u64, Option<Register>), u64)>,
@@ -25,11 +26,11 @@ pub struct IrFunctionBuilder<'a> {
     funcs: Vec<(String, Vec<ArgTyp>)>,
     public: bool,
 
-    builder: &'a mut Builder
+    builder: Builder
 }
 
-impl<'a> IrFunctionBuilder<'a> {
-    pub fn new(name: &'a str, builder: &'a mut Builder) -> Self {
+impl IrFunctionBuilder {
+    pub fn new(name: &str, builder: &mut Builder) -> Self {
         Self {
             generated: vec![],
             name: name.into(),
@@ -38,7 +39,7 @@ impl<'a> IrFunctionBuilder<'a> {
             funcs: vec![],
             public: false,
 
-            builder: builder,
+            builder: builder.to_owned(),
         }
     }
 
@@ -268,23 +269,23 @@ impl<'a> IrFunctionBuilder<'a> {
     }
 }
 
-pub struct IrBuilder<'a> {
-    functs: Vec<IrFunctionBuilder<'a>>,
-    builder: Builder,
+pub struct IrBuilder {
+    functs: Vec<IrFunctionBuilder>,
+    pub build: Builder,
 }
 
-impl<'a> IrBuilder<'a> {
+impl IrBuilder {
     pub fn new() -> Self {
         Self { 
             functs: vec![], 
-            builder: Builder::new(),
+            build: Builder::new(),
         }
     }
 
-    pub fn add(& mut self, name: &'a str) -> &'a mut IrFunctionBuilder {
-        let func = IrFunctionBuilder::new(name, &mut self.builder);
-
-        self.functs.push(func);
+    pub fn add(& mut self, name: &str) -> &mut IrFunctionBuilder {
+        self.functs.push(
+            IrFunctionBuilder::new(name, &mut self.build)
+        );
 
         self.functs.last_mut().unwrap()
     }
@@ -293,9 +294,9 @@ impl<'a> IrBuilder<'a> {
         for func in self.functs.iter() {
             let func = func.to_owned();
 
-            self.builder.define(&func.name, func.public, func.generated.clone())?;
+            self.build.define(&func.name, func.public, func.generated.clone())?;
         }
 
-        Ok(&mut self.builder)
+        Ok(&mut self.build)
     }
 }

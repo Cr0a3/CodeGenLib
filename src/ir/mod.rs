@@ -8,6 +8,7 @@ use crate::asm::{adr, AsmInstructionEnum};
 
 mod ir_builder;
 pub use ir_builder::IrBuilder;
+pub use ir_builder::IrFunctionBuilder;
 
 pub fn resolve(
     funcs: Vec<String>,

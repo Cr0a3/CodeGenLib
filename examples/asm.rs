@@ -10,7 +10,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         MovVal(Register::EAX, 5),
     ])?;
 
-    builder.write("tmp/test.o")?;
+    builder.write("tmp/asm.o")?;
 
     Ok(())
 }
