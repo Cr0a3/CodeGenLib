@@ -1,4 +1,4 @@
-<img src="https://github.com/Toni-Graphics/CodeGenLib/assets/127748753/83223f5c-72f0-4b20-8380-dd9ec075551b">
+<img src="https://github.com/Toni-Graphics/CodeGenLib/assets/127748753/a8e95f8b-2382-481c-b11a-29065e1f0e73">
 
 A libary to generate x86-64Bit machine code
 
@@ -14,12 +14,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let add = builder.add("add");
     add.args(vec![
-        ("x", Type::uInt64(0) ),
-        ("y", Type::uInt64(0) ),
+        ("x", Type::u64(0) ),
+        ("y", Type::u64(0) ),
     ]);
 
     add.vars(vec![
-        ("z", Type::uInt64(0) ),
+        ("z", Type::u64(0) ),
     ]);
 
     add.build_add("x", "y", "z")?;

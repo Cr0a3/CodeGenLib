@@ -69,11 +69,20 @@ impl Builder {
             // add links
             let links = resolved.1;
             for link in links {
-                obj.link(Link {
-                    from: func.0.to_string(),
-                    to: link.to,
-                    at: link.at,
-                });
+                if self.label_names.contains(&link.to) {
+                    obj.link(Link {
+                        from: func.0.to_string(),
+                        to: format!(".L{}", link.to),
+                        at: link.at,
+                    });
+
+                } else {
+                    obj.link(Link {
+                        from: func.0.to_string(),
+                        to: link.to,
+                        at: link.at,
+                    });
+                }
             }
         }
 
@@ -106,8 +115,9 @@ impl Builder {
             obj.define(&name, label.1.1.to_owned());
         }
 
-        obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)?;
-        Ok(())
+        println!("obj: {:?}", obj);
+
+        obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)
     }
 
     /// Adds the symbols/links/etc. from the other builder into the current if they doesn't exits

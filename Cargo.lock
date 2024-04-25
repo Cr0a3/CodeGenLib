@@ -78,9 +78,7 @@ dependencies = [
 
 [[package]]
 name = "formatic"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b316b1400e84172dd02db9bbecc7766154b4fadc6714e3b264ccc27378cf4a09"
+version = "0.1.1"
 dependencies = [
  "object",
 ]

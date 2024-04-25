@@ -334,7 +334,18 @@ pub fn resolve(
             }
 
             AsmInstructionEnum::PushVal(value) => {
-                vec![Instruction::with1(Code::Pushd_imm32, value)?]
+                if value <= i32::MAX.into() {
+                    vec![Instruction::with1(Code::Pushq_imm32, value as i32)?]
+                } else if value <= i16::MAX.into() {
+                    vec![Instruction::with1(Code::Push_imm16, value as i32)?]
+                } else if value <= i8::MAX.into() {
+                    vec![Instruction::with1(Code::Pushw_imm8, value as i32)?]
+                } else {
+                    vec![
+                        Instruction::with1(Code::Pushq_imm32, (value & 0xFFFFFFFF) as i32)?,    // Push low bytes
+                        Instruction::with1(Code::Pushq_imm32, (value >> 32) as i32)?,           // Push high bytes
+                        ]
+                }
             }
 
             AsmInstructionEnum::DivVal(_, _) => {
@@ -346,6 +357,7 @@ pub fn resolve(
             AsmInstructionEnum::DivMem(_, _) => {
                 vec![Instruction::with(Code::Nopq)]
             }
+            
             AsmInstructionEnum::PushLabel(name) => {
                 let name = name.to_string();
 
@@ -365,7 +377,7 @@ pub fn resolve(
             AsmInstructionEnum::PushPtr(target) => {
                 let target = target.to_string();
 
-                if !decls.contains_key(&target) && !funcs.contains(&target) {
+                if !decls.contains_key(&target) && !labels.contains(&target) && !funcs.contains(&target) {
                     decls.insert(target.clone(), Decl::Data(Scope::Import));
                 };
 

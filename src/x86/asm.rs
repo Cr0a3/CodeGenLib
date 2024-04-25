@@ -39,7 +39,7 @@ pub enum AsmInstructionEnum {
     DivMem(Register, MemoryOperand),
 
     Push(Register),
-    PushVal(u32),
+    PushVal(i64),
     PushLabel(String),
     PushPtr(String),
 

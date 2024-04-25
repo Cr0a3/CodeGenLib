@@ -21,7 +21,7 @@ pub struct IrFunctionBuilder {
     funcs: Vec<(String, Vec<Type>)>,
     public: bool,
 
-    builder: Builder,
+    pub builder: Builder,
 }
 
 impl IrFunctionBuilder {
@@ -226,18 +226,15 @@ impl IrFunctionBuilder {
             }
         }
 
-        if used_regs <= 4 {
+        println!("arg {} -> {:?}", index, arg);
+        println!("used regs {}", used_regs);
+
+        if used_regs <= 4 && arg.in_reg() {
             match arg {
                 Type::u32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
                 Type::i32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
                 Type::u64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
                 Type::i64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
-                Type::Bytes(b) => {
-                    let label_name = format!(".L{}.{}.{}", self.name, name, index);
-        
-                    self.generated.push(PushLabel(
-                        label_name
-                    ));},
                 Type::Str(content) => {
                     let label_name = format!("{}.{}.{}", self.name, name, index);
 
@@ -245,6 +242,7 @@ impl IrFunctionBuilder {
 
                     self.generated.push(MovPtr(arg64(index as i64), label_name));
                 },
+                _ => {},
             };
 
         } else {
@@ -257,8 +255,15 @@ impl IrFunctionBuilder {
                     self.generated.push(PushPtr(label_name));
                 },
 
-                _ => {
-                    let label_name = format!(".L{}.{}.{}", self.name, name, index);
+                Type::u64(val) => { self.generated.push(PushVal(val as i64)) },
+                Type::i64(val) => { self.generated.push(PushVal(val as i64)) },
+                Type::u32(val) => { self.generated.push(PushVal(val as i64)) },
+                Type::i32(val) => { self.generated.push(PushVal(val as i64)) },
+
+                arg => {
+                    let label_name = format!("{}.{}.{}", self.name, name, index);
+
+                    self.builder.define_label(&label_name, false, arg.bytes());
         
                     self.generated.push(PushLabel(
                         label_name
@@ -313,6 +318,8 @@ impl IrBuilder {
     pub fn builder(&mut self) -> Result<&mut Builder, Box<dyn std::error::Error>> {
         for func in self.functs.iter() {
             let func = func.to_owned();
+
+            self.build.sync(&func.builder);
 
             self.build.define(&func.name, func.public, func.generated.clone())?;
         }

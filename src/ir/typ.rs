@@ -35,4 +35,15 @@ impl Type {
             Type::Str(_) => 8,
         }
     }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        match self {
+            Type::u64(val) => val.to_be_bytes().into(),
+            Type::u32(val) => val.to_be_bytes().into(),
+            Type::i64(val) => val.to_be_bytes().into(),
+            Type::i32(val) => val.to_be_bytes().into(),
+            Type::Bytes(b) => b.to_vec(),
+            Type::Str(b) => b.to_vec(),
+        }
+    }
 }

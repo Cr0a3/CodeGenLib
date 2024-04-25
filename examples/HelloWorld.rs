@@ -16,7 +16,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         "printf", 
         vec![Type::Bytes(b"Hello World!".into())]
     )?;
-
+    
     main.set_public();
 
     builder.builder()?.write("tmp/HelloWorld.o")?;
