@@ -46,4 +46,15 @@ impl Type {
             Type::Str(b) => b.to_vec(),
         }
     }
+
+    pub fn empty(&self) -> Self {
+        match self {
+            Type::u64(_) => Type::u64(0),
+            Type::u32(_) => Type::u32(0),
+            Type::i64(_) => Type::i64(0),
+            Type::i32(_) => Type::i32(0),
+            Type::Bytes(_) => Type::Bytes(vec![]),
+            Type::Str(_) => Type::Str(vec![]),
+        }
+    }
 }

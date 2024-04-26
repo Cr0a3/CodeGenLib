@@ -9,12 +9,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let main = builder.add("main");
 
     main.efuncs(vec![
-        ("printf", vec![Type::Bytes(vec![])])
+        ("printf", vec![Type::Str(vec![])])
     ]);
 
     main.build_call(
         "printf", 
-        vec![Type::Bytes(b"Hello World!".into())]
+        vec![Type::Str(b"Hello World!".into())]
     )?;
     
     main.set_public();

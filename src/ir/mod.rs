@@ -37,7 +37,7 @@ pub fn resolve(
                 } else if reg.size() == 2 {
                     vec![Instruction::with1(Code::Push_r16, reg)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -49,7 +49,7 @@ pub fn resolve(
                 } else if reg.size() == 2 {
                     vec![Instruction::with1(Code::Pop_r16, reg)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -95,7 +95,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Mov_r8_imm8, reg, value)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -109,7 +109,7 @@ pub fn resolve(
                 } else if (src.size() == 1) && (target.size() == 1) {
                     vec![Instruction::with2(Code::Mov_r8_rm8, src, target)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -126,7 +126,7 @@ pub fn resolve(
                     at: generated.len() + 2,
                 });
 
-                vec![Instruction::with2(Code::Mov_r64_rm64, src, 0)?]
+                vec![Instruction::with2(Code::Mov_r64_imm64, src, 0)?]
             }
 
             AsmInstructionEnum::Load(reg, mem) => {
@@ -139,7 +139,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Mov_r8_rm8, reg, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -153,7 +153,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Mov_rm8_r8, mem, reg)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -167,7 +167,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with1(Code::Inc_rm8, reg)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -181,7 +181,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with1(Code::Dec_rm8, reg)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -195,7 +195,7 @@ pub fn resolve(
                 } else if mem.scale == 1 {
                     vec![Instruction::with1(Code::Inc_rm8, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -209,7 +209,7 @@ pub fn resolve(
                 } else if mem.scale == 1 {
                     vec![Instruction::with1(Code::Dec_rm8, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -223,7 +223,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Add_rm8_imm8, reg, value)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -237,7 +237,7 @@ pub fn resolve(
                 } else if (src.size() == 1) && (target.size() == 1) {
                     vec![Instruction::with2(Code::Add_r8_rm8, src, target)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -251,7 +251,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Add_r8_rm8, reg, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -265,7 +265,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Sub_rm8_imm8, reg, value)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -279,7 +279,7 @@ pub fn resolve(
                 } else if (src.size() == 1) && (target.size() == 1) {
                     vec![Instruction::with2(Code::Sub_r8_rm8, src, target)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -293,7 +293,7 @@ pub fn resolve(
                 } else if reg.size() == 1 {
                     vec![Instruction::with2(Code::Sub_r8_rm8, reg, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -305,7 +305,7 @@ pub fn resolve(
                 } else if reg.size() == 2 {
                     vec![Instruction::with2(Code::Imul_r16_rm16_imm16, reg, value)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -317,7 +317,7 @@ pub fn resolve(
                 } else if (src.size() == 2) && (target.size() == 2) {
                     vec![Instruction::with2(Code::Imul_r16_rm16, src, target)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -329,7 +329,7 @@ pub fn resolve(
                 } else if reg.size() == 2 {
                     vec![Instruction::with2(Code::Imul_r16_rm16, reg, mem)?]
                 } else {
-                    vec![Instruction::with(Code::Nopq)]
+                    vec![Instruction::with(Code::Nopd)]
                 }
             }
 
@@ -349,13 +349,13 @@ pub fn resolve(
             }
 
             AsmInstructionEnum::DivVal(_, _) => {
-                vec![Instruction::with(Code::Nopq)]
+                vec![Instruction::with(Code::Nopd)]
             }
             AsmInstructionEnum::DivReg(_, _) => {
-                vec![Instruction::with(Code::Nopq)]
+                vec![Instruction::with(Code::Nopd)]
             }
             AsmInstructionEnum::DivMem(_, _) => {
-                vec![Instruction::with(Code::Nopq)]
+                vec![Instruction::with(Code::Nopd)]
             }
             
             AsmInstructionEnum::PushLabel(name) => {

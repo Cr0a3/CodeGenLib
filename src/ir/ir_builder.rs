@@ -220,8 +220,10 @@ impl IrFunctionBuilder {
 
         let mut used_regs = 0;
 
-        for arg in func.1 {
-            if arg.in_reg() {
+        for _arg in func.1 {
+            if _arg.empty() == arg.empty() { break; }
+
+            if _arg.in_reg() {
                 used_regs += 1;
             }
         }
@@ -279,7 +281,7 @@ impl IrFunctionBuilder {
         let mut index = 0;
 
         for arg in args {
-            self.gen_x_arg_for_func(func, index, arg)?;
+            self.gen_x_arg_for_func(func, index + 1, arg)?;
 
             index += 1;
         } 
