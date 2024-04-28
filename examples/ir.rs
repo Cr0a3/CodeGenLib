@@ -2,7 +2,7 @@ use CodeGenLib::prelude::*;
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut builder = IrBuilder::new(HostAbi);
+    let mut builder = IrBuilder::new(Abi::host());
 
     let add = builder.add("add");
     add.args(vec![
@@ -19,7 +19,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     add.set_public();
 
-    builder.builder()?.write("tmp/ir.o")?;
+    builder.write("tmp/ir.o")?;
 
     Ok(())
 }

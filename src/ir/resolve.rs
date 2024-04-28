@@ -5,7 +5,7 @@ use formatic::{Decl, Link, Scope};
 use iced_x86::{MemoryOperand, Register};
 use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, InstructionBlock};
 
-use crate::abi::WindowsAbi;
+use crate::abi::Abi;
 use super::AsmInstructionEnum;
 
 pub fn resolve(
@@ -378,7 +378,7 @@ pub fn resolve(
                     at: generated.len() + 1,
                 });
 
-                vec![Instruction::with1(Code::Push_rm64, WindowsAbi.mem(0))?]
+                vec![Instruction::with1(Code::Push_rm64, Abi::host().mem(0))?]
             }
 
             AsmInstructionEnum::PushPtr(target) => {

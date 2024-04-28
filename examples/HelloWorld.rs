@@ -4,7 +4,7 @@ use CodeGenLib::prelude::*;
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut builder = IrBuilder::new(HostAbi);
+    let mut builder = IrBuilder::new(Abi::host());
 
     let main = builder.add("main");
 
@@ -19,7 +19,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     main.set_public();
 
-    builder.builder()?.write("tmp/HelloWorld.o")?;
+    builder.write("tmp/HelloWorld.o")?;
 
     Ok(())
 }

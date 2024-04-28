@@ -51,13 +51,7 @@ pub mod prelude {
     pub use crate::ir::IrBuilder;
     pub use crate::ir::Type;
 
-    pub use crate::abi::{WindowsAbi, LinuxAbi};
-
-    #[cfg(target_os = "windows")]
-    pub use crate::abi::WindowsAbi as HostAbi;
-
-    #[cfg(target_os = "linux")]
-    pub use crate::abi::LinuxAbi as HostAbi;
+    pub use crate::abi::Abi;
 }
 
 //#[cfg(feature = "jit")]

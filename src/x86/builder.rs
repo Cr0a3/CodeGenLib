@@ -47,7 +47,7 @@ impl Builder {
         self.label_names.push(name.into());
     }
 
-    pub fn write(&mut self, outpath: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn write(&mut self, outpath: &str, bin: BinFormat) -> Result<(), Box<dyn std::error::Error>> {
         let mut obj = ObjectBuilder::new(outpath);
 
         let mut resolved_funcs: HashMap<String, Vec<u8>> = HashMap::new();
@@ -115,9 +115,7 @@ impl Builder {
             obj.define(&name, label.1.1.to_owned());
         }
 
-        println!("obj: {:?}", obj);
-
-        obj.write(BinFormat::host(), Arch::X86_64, Endian::Litte)
+        obj.write(bin, Arch::X86_64, Endian::Litte)
     }
 
     /// Adds the symbols/links/etc. from the other builder into the current if they doesn't exits

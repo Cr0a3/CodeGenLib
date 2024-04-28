@@ -53,9 +53,15 @@ impl IrFunctionBuilder {
 
         for arg in args {
             let reg: Option<Register> = {
-                if reg_pasted_args < self.abi.reg_args() && (arg.1.size() <= 8) {
+                if reg_pasted_args < self.abi.reg_args() && arg.1.in_reg() {
                     reg_pasted_args += 1;
-                    Some(self.abi.arg32(reg_pasted_args))
+
+                    if arg.1.size() == 8 { // u64/i64/str
+                        Some(self.abi.arg64(reg_pasted_args - 1))
+                    } else {
+                        Some(self.abi.arg32(reg_pasted_args - 1))
+                    }
+
                 } else {
                     None
                 }
@@ -309,6 +315,7 @@ pub struct IrBuilder {
 
 impl IrBuilder {
     pub fn new(target: Abi) -> Self {
+        println!("{:?}", target);
         Self { 
             functs: vec![], 
             build: Builder::new(),
@@ -324,7 +331,7 @@ impl IrBuilder {
         self.functs.last_mut().unwrap()
     }
 
-    pub fn builder(&mut self) -> Result<&mut Builder, Box<dyn std::error::Error>> {
+    pub fn write(&mut self, outpath: &str) -> Result<(), Box<dyn std::error::Error>> {
         for func in self.functs.iter() {
             let func = func.to_owned();
 
@@ -333,6 +340,6 @@ impl IrBuilder {
             self.build.define(&func.name, func.public, func.generated.clone())?;
         }
 
-        Ok(&mut self.build)
+        self.build.write(outpath, self.abi.binary_format())
     }
 }
