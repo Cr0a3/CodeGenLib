@@ -27,14 +27,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     add.set_public();
 
-    builder.builder()?.write("tmp/ir.o")?;
+    builder.write("tmp/ir.o")?;
 
     Ok(())
 }
 ```
 
 ## Documentation
-Check out our documentation on https://docs.rs/CodeGenLib/latest/CodeGenLib/
+[ToDo]
 
 ## Copyright
 Copyright (C) 2024 Cr0a3
