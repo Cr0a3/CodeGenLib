@@ -1,4 +1,4 @@
-use crate::asm::AsmInstructionEnum::{self, *};
+use crate::ir::AsmInstructionEnum::{self, *};
 use iced_x86::Register;
 use std::{collections::VecDeque, error::Error};
 
@@ -41,15 +41,12 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
     opt.push_back(instr); // last element gets skipped so
 
     // Setup the stack and add
-    if !(opt[0] == Endbr64
-        && opt[1] == Push(Register::RBP)
-        && opt[2] == MovReg(Register::RBP, Register::RSP))
-    {
-        opt.push_front(MovReg(Register::RBP, Register::RSP));
-        opt.push_front(Push(Register::RBP));
-        opt.push_front(Endbr64);
-    }
+    opt.push_front(SubVal(Register::RSP, 32));
+    opt.push_front(MovReg(Register::RBP, Register::RSP));
+    opt.push_front(Push(Register::RBP));
+    opt.push_front(Endbr64);
 
+    opt.push_back(AddVal(Register::RSP, 32));
     opt.push_back(AsmInstructionEnum::Pop(Register::RBP)); // for stack safty
     opt.push_back(AsmInstructionEnum::Ret);
 

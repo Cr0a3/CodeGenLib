@@ -3,14 +3,10 @@ use std::error::Error;
 use iced_x86::Register;
 
 use crate::{
-    asm::{
-        arg32, arg64, stack, AsmInstructionEnum::{self, *}
-    },
-    error::CodeGenLibError,
-    Builder,
+    abi::Abi, error::CodeGenLibError, Builder
 };
 
-pub use super::Type;
+pub use super::{Type, AsmInstructionEnum::{self, *}};
 
 #[derive(Debug, Clone)]
 pub struct IrFunctionBuilder {
@@ -21,19 +17,27 @@ pub struct IrFunctionBuilder {
     funcs: Vec<(String, Vec<Type>)>,
     public: bool,
 
+    abi: Abi,
+
     pub builder: Builder,
 }
 
 impl IrFunctionBuilder {
-    pub fn new(name: &str, builder: &mut Builder) -> Self {
+    pub fn new(name: &str, builder: &mut Builder, abi: &Abi) -> Self {
         Self {
             generated: vec![],
+
             name: name.into(),
+
             args: vec![],
             vars: vec![],
             funcs: vec![],
+
             public: false,
+
             builder: builder.to_owned(),
+
+            abi: abi.to_owned(),
         }
     }
 
@@ -49,9 +53,9 @@ impl IrFunctionBuilder {
 
         for arg in args {
             let reg: Option<Register> = {
-                if reg_pasted_args < 8 && (arg.1.size() <= 8) {
+                if reg_pasted_args < self.abi.reg_args() && (arg.1.size() <= 8) {
                     reg_pasted_args += 1;
-                    Some(arg32(reg_pasted_args))
+                    Some(self.abi.arg32(reg_pasted_args))
                 } else {
                     None
                 }
@@ -83,7 +87,7 @@ impl IrFunctionBuilder {
 
             if arg.0.2.is_some() {
                 self.generated
-                   .push(Store(arg.0.2.unwrap(), stack(-stack_offset)));
+                   .push(Store(arg.0.2.unwrap(), self.abi.stack(-stack_offset)));
 
                 mod_vars.push((name.into(), -stack_offset));
             } else {
@@ -184,12 +188,12 @@ impl IrFunctionBuilder {
 
 
         self.generated
-            .push(Load(Register::RAX, stack(var1.1)));
+            .push(Load(Register::RAX, self.abi.stack(var1.1)));
         self.generated
-            .push(AddMem(Register::RAX, stack(var2.1) ));
+            .push(AddMem(Register::RAX, self.abi.stack(var2.1) ));
 
         self.generated
-            .push(Store(Register::RAX, stack(ret.1)));
+            .push(Store(Register::RAX, self.abi.stack(ret.1)));
 
         Ok(())
     }
@@ -198,7 +202,7 @@ impl IrFunctionBuilder {
         let var = self.get_var(var_name.into())?;
 
         self.generated
-           .push(Load(Register::RAX, stack(var.1)));
+           .push(Load(Register::RAX, self.abi.stack(var.1)));
 
         self.generated.push( Ret );
 
@@ -231,18 +235,18 @@ impl IrFunctionBuilder {
         println!("arg {} -> {:?}", index, arg);
         println!("used regs {}", used_regs);
 
-        if used_regs <= 4 && arg.in_reg() {
+        if used_regs <= self.abi.reg_args() && arg.in_reg() {
             match arg {
-                Type::u32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
-                Type::i32(val) =>   {self.generated.push(MovVal(arg32(used_regs), val as i64)); },
-                Type::u64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
-                Type::i64(val) =>   {self.generated.push(MovVal(arg64(used_regs), val as i64)); },
+                Type::u32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
+                Type::i32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
+                Type::u64(val) =>   {self.generated.push(MovVal(self.abi.arg64(used_regs), val as i64)); },
+                Type::i64(val) =>   {self.generated.push(MovVal(self.abi.arg64(used_regs), val as i64)); },
                 Type::Str(content) => {
                     let label_name = format!("{}.{}.{}", self.name, name, index);
 
                     self.builder.define_label(&label_name, false, content);
 
-                    self.generated.push(MovPtr(arg64(index as i64), label_name));
+                    self.generated.push(MovPtr(self.abi.arg64(index), label_name));
                 },
                 _ => {},
             };
@@ -299,19 +303,22 @@ impl IrFunctionBuilder {
 pub struct IrBuilder {
     functs: Vec<IrFunctionBuilder>,
     pub build: Builder,
+
+    abi: Abi,
 }
 
 impl IrBuilder {
-    pub fn new() -> Self {
+    pub fn new(target: Abi) -> Self {
         Self { 
             functs: vec![], 
             build: Builder::new(),
+            abi: target,
         }
     }
 
     pub fn add(&mut self, name: &str) -> &mut IrFunctionBuilder {
         self.functs.push(
-            IrFunctionBuilder::new(name, &mut self.build)
+            IrFunctionBuilder::new(name, &mut self.build, &self.abi)
         );
 
         self.functs.last_mut().unwrap()

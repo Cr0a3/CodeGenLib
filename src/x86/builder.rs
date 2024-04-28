@@ -1,4 +1,4 @@
-use crate::{asm::AsmInstructionEnum, resolve, Optimize};
+use crate::{ir::AsmInstructionEnum, ir::resolve::resolve, Optimize};
 use formatic::{Arch, BinFormat, Decl, Endian, Link, ObjectBuilder, Scope};
 use std::collections::HashMap;
 

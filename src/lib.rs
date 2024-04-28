@@ -33,21 +33,31 @@ pub mod ir;
 pub mod jit;
 pub mod opt;
 pub mod x86;
+pub mod abi;
 
-pub use ir::resolve;
+pub use ir::resolve::resolve;
 pub use x86::builder::Builder;
 pub use x86::*;
 
 pub mod IR {
-    pub use crate::x86::asm::AsmInstructionEnum::*;
+    pub use crate::ir::AsmInstructionEnum::*;
     pub use iced_x86::Register;
 }
 
 pub use opt::Optimize;
 
+
 pub mod prelude {
     pub use crate::ir::IrBuilder;
     pub use crate::ir::Type;
+
+    pub use crate::abi::{WindowsAbi, LinuxAbi};
+
+    #[cfg(target_os = "windows")]
+    pub use crate::abi::WindowsAbi as HostAbi;
+
+    #[cfg(target_os = "linux")]
+    pub use crate::abi::LinuxAbi as HostAbi;
 }
 
 //#[cfg(feature = "jit")]

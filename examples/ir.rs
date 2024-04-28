@@ -2,7 +2,7 @@ use CodeGenLib::prelude::*;
 
 #[rustfmt::skip]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut builder = IrBuilder::new();
+    let mut builder = IrBuilder::new(HostAbi);
 
     let add = builder.add("add");
     add.args(vec![
