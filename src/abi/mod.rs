@@ -10,6 +10,7 @@ use windows::WindowsAbi;
 #[allow(unused_imports)]
 use linux::LinuxAbi;
 
+/// Struct which saves the target ABI
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Abi {
     reg_args: usize,
@@ -17,13 +18,17 @@ pub struct Abi {
     regs_64: Vec<Register>,
     regs_32: Vec<Register>,
 
+    return_reg: Register,
+
     stack_base: i64,
 
     bin: BinFormat,
 }
 
 impl Abi {
-
+    /// Returns the host ABI
+    /// 
+    /// ! Only works for **Linux and Windows**
     pub fn host() -> Self {
         #[cfg(target_os = "windows")]
         return Abi::windows();
@@ -32,10 +37,13 @@ impl Abi {
         return Abi::linux();
     }
 
+    /// Returns how many arguments are stored in registers
     pub fn reg_args(&self) -> usize {
         self.reg_args
     }
 
+    /// Returns a 64bit register in which the argument is stored
+    /// else the Register is Register::None
     pub fn arg64(&self, nr: usize) -> Register {
         if self.reg_args >= nr {
             let opt = self.regs_64.get(nr);
@@ -50,6 +58,8 @@ impl Abi {
         }
     }
 
+    /// Returns a 32bit register in which the argument is stored
+    /// else the register is `Register::None`
     pub fn arg32(&self, nr: usize) -> Register {
         if self.reg_args >= nr {
             let opt = self.regs_32.get(nr);
@@ -64,6 +74,7 @@ impl Abi {
         }
     }
 
+    /// Returns the `MemoryOperand` for the stack position (rbp + pos)
     pub fn stack(&self, pos: i64) -> MemoryOperand {
 
         let displ = {
@@ -85,6 +96,7 @@ impl Abi {
         )
     }
 
+    /// Returns the `MemoryOperand` for the memory position
     pub fn mem(&self, adr: i64) -> MemoryOperand {
         MemoryOperand::new(
             Register::None,
@@ -97,7 +109,13 @@ impl Abi {
         )
     }
 
+    /// Returns the `BinFormat` for the target abi
     pub fn binary_format(&self) -> BinFormat {
         self.bin
+    }
+
+    /// Returns the `Register` in which the return value is stored
+    pub fn ret_reg(&self) -> Register {
+        self.return_reg
     }
 }

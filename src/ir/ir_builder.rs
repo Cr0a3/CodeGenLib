@@ -208,7 +208,16 @@ impl IrFunctionBuilder {
         let var = self.get_var(var_name.into())?;
 
         self.generated
-           .push(Load(Register::RAX, self.abi.stack(var.1)));
+           .push(Load(self.abi.ret_reg(), self.abi.stack(var.1)));
+
+        self.generated.push( Ret );
+
+        Ok(())
+    }
+
+    pub fn build_return_int(&mut self, int: i64) -> Result<(), CodeGenLibError> {
+        self.generated
+           .push(MovVal(self.abi.ret_reg(), int));
 
         self.generated.push( Ret );
 
@@ -291,7 +300,7 @@ impl IrFunctionBuilder {
         let mut index = 0;
 
         for arg in args {
-            self.gen_x_arg_for_func(func, index + 1, arg)?;
+            self.gen_x_arg_for_func(func, index, arg)?;
 
             index += 1;
         } 

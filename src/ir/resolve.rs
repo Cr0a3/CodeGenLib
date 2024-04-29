@@ -119,17 +119,17 @@ pub fn resolve(
                 links.push(Link {
                     from: String::new(),
                     to: target,
-                    at: generated.len() + 2,
+                    at: generated.len() + 3,
                 });
 
                 if src.size() == 8 {
-                    vec![Instruction::with2(Code::Lea_r64_m, src, MemoryOperand::new(
-                        Register::RIP, Register::None, 1, 0, 0, true, Register::None
-                    ))?]
+                    vec![Instruction::with2(Code::Lea_r64_m, Register::RAX, MemoryOperand::new(
+                        Register::RIP, Register::None, 1, 0, 0, false, Register::None
+                    ))?, Instruction::with2(Code::Mov_r64_rm64, src, Register::RAX)?]
                 } else if src.size() == 4 {
-                    vec![Instruction::with2(Code::Lea_r32_m, src, MemoryOperand::new(
-                        Register::RIP, Register::None, 1, 0, 0, true, Register::None
-                    ))?]
+                    vec![Instruction::with2(Code::Lea_r32_m, Register::EAX, MemoryOperand::new(
+                        Register::RIP, Register::None, 1, 0, 0, false, Register::None
+                    ))?, Instruction::with2(Code::Mov_r32_rm32, src, Register::RAX)?]
                 } else {
                     vec![Instruction::with(Code::Nopd)]
                 }
