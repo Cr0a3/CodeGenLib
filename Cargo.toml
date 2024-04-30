@@ -1,6 +1,6 @@
 [package]
 name = "CodeGenLib"
-version = "0.0.1"
+version = "1.0.0"
 edition = "2021"
 description = "A libary to build compilers (like LLVM/Cranelift)"
 reposentory = "https://github.com/Toni-Graphics/CodeGenLib"
@@ -9,8 +9,19 @@ documentation = "https://docs.rs/CodeGenLib/latest/CodeGenLib/"
 categories = ["development-tools::ffi"] 
 license = "MPL-2.0"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+doctest = false
+
+[workspace]
+resolver = '2'
+members = [
+  ".",
+  "crates/Formatic",
+]
 
 [dependencies]
-formatic =  { path = "../formatic/" }
+formatic = { workspace = true }
 iced-x86 = { version = "1.21.0", features = ["code_asm"] }
+
+[workspace.dependencies]
+formatic = { path = "crates/Formatic" }

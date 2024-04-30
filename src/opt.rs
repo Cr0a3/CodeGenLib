@@ -1,12 +1,14 @@
+//! Safety time!
+
 use crate::ir::AsmInstructionEnum::{self, *};
 use iced_x86::Register;
 use std::{collections::VecDeque, error::Error};
 
-macro_rules! instr {
+/*macro_rules! instr {
     ($instr_var:ident => $instr:ident; $last_instr_var:ident => $instr2:ident => $($arg:tt)*) => {
         matches!($instr_var, $instr($($arg)*) if $last_instr_var == $instr2( $($arg)* ))
     };
-}
+}*/
 
 /// Optimizes and makes the incoming ir safe
 pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>, Box<dyn Error>> {
@@ -31,7 +33,8 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
             }));
         } else if _instr == Ret {
             break;
-        } else {
+        } else if instr == Nop { /* CHILL */} 
+        else {
             opt.push_back(instr);
         }
 
@@ -44,7 +47,7 @@ pub fn Optimize(code: Vec<AsmInstructionEnum>) -> Result<Vec<AsmInstructionEnum>
     opt.push_front(SubVal(Register::RSP, 32));
     opt.push_front(MovReg(Register::RBP, Register::RSP));
     opt.push_front(Push(Register::RBP));
-    opt.push_front(Endbr64);
+    //opt.push_front(Endbr64);
 
     opt.push_back(AddVal(Register::RSP, 32));
     opt.push_back(AsmInstructionEnum::Pop(Register::RBP)); // for stack safty

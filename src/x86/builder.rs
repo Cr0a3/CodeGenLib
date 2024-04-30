@@ -106,7 +106,7 @@ impl Builder {
 
             let name = format!(".L{}", label.0);
 
-            obj.add_decl(&name, Decl::Data({
+            obj.add_decl(&name, Decl::RData({
                 match label.1.0 {
                     true => Scope::Export,
                     false => Scope::Private,

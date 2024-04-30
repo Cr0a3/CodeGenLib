@@ -1,3 +1,5 @@
+//! Make easy cross compilation to linux/windows
+
 use formatic::BinFormat;
 
 pub mod windows;

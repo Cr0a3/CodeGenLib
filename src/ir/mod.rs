@@ -1,3 +1,5 @@
+//! Easy ir compilation 
+
 use iced_x86::{MemoryOperand, Register};
 
 pub mod ir_builder;
