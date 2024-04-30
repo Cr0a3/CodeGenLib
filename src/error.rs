@@ -1,3 +1,5 @@
+//! Sublib for errors
+
 use std::fmt;
 
 #[allow(non_snake_case)]

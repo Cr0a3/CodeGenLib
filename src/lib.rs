@@ -45,19 +45,22 @@ pub use ir::resolve::resolve;
 pub use x86::builder::Builder;
 pub use x86::*;
 
+/// Most used structs for ir work exported
 pub mod IR {
     pub use crate::ir::AsmInstructionEnum::*;
+    pub use crate::Builder;
     pub use iced_x86::Register;
 }
 
 pub use opt::Optimize;
 
-
+/// Most used structs for high level interface exported
 pub mod prelude {
     pub use crate::ir::IrBuilder;
     pub use crate::ir::Type;
 
     pub use crate::target::Target;
 }
+
 /// BinaryFormat re-exported
 pub use formatic::BinFormat;

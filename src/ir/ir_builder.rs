@@ -74,8 +74,6 @@ impl IrFunctionBuilder {
             prev_size += arg.1.size();
         }
 
-        println!("{:?}", mod_args);
-
         self.args = mod_args;
     }
 
@@ -115,8 +113,6 @@ impl IrFunctionBuilder {
 
             stack_offset += var.1.size() as i64;
         }
-
-        println!("{:?}", &mod_vars);
 
         self.vars = mod_vars;
     }
@@ -237,9 +233,6 @@ impl IrFunctionBuilder {
             }
         }
 
-        println!("arg {} -> {:?}", index, arg);
-        println!("used regs {}", used_regs);
-
         if used_regs <= self.abi.reg_args() && arg.in_reg() {
             match arg {
                 Type::u32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
@@ -346,9 +339,16 @@ impl IrBuilder {
         for func in self.functs.iter() {
             let func = func.to_owned();
 
+            let mut code = func.generated;
+
+            if code.last() != Some(&Ret) {
+                code.push( MovVal(self.abi.abi.ret_reg(), 0) ); // return 0;
+                code.push( Ret );
+            }
+
             self.build.sync(&func.builder);
 
-            self.build.define(&func.name, func.public, func.generated.clone())?;
+            self.build.define(&func.name, func.public, code)?;
         }
 
         self.build.write(outpath, self.abi.bin)
