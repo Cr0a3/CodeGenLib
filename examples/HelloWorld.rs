@@ -9,7 +9,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let main = builder.add("main");
 
     main.efuncs(vec![
-        ("printf", vec![Type::Str(vec![]), Type::Str(vec![])])
+        ("printf", vec![Type::Unlim(vec![])])
     ]);
 
     main.build_call(

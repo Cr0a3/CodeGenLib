@@ -9,10 +9,16 @@ pub enum Type {
 
     Bytes(Vec<u8>),
     Str(Vec<u8>), // char* -> so 8 byte pointer
+    Ptr(Box<Type>), // char* -> so 8 byte pointer
+
+    InVar(String),
+
+    /// used for unkown number of arguments (`printf(char* fmt, ...)`)
+    Unlim(Vec<Type>),
 }
 
 impl Type {
-    /// Returns if the type can be stored in registers
+    /// Returns if the type can be stored in registers (false for undetermined)
     pub fn in_reg(&self) -> bool {
         match self {
             Type::u64(_) => true,
@@ -21,10 +27,13 @@ impl Type {
             Type::i32(_) => true,
             Type::Bytes(_) => false,
             Type::Str(_) => true,
+            Type::Ptr(_) => true,
+            Type::Unlim(_) => false,
+            Type::InVar(_) => false,
         }
     }
 
-    /// Returns the size of the type in bytes
+    /// Returns the size of the type in bytes (0 for undetermined)
     pub fn size(&self) -> u64 {
         match self {
             Type::u64(_) => 8,
@@ -33,10 +42,14 @@ impl Type {
             Type::i32(_) => 4,
             Type::Bytes(vec) => (vec.len() - 1) as u64,
             Type::Str(_) => 8,
+            Type::Ptr(_) => 8,
+
+            Type::Unlim(_) => 0,
+            Type::InVar(_) => 0,
         }
     }
 
-    /// Returns the contents of the type as `Vec<u8>` 
+    /// Returns the contents of the type as `Vec<u8>`  (empty for undetermined)
     pub fn bytes(&self) -> Vec<u8> {
         match self {
             Type::u64(val) => val.to_be_bytes().into(),
@@ -45,6 +58,9 @@ impl Type {
             Type::i32(val) => val.to_be_bytes().into(),
             Type::Bytes(b) => b.to_vec(),
             Type::Str(b) => b.to_vec(),
+            Type::Ptr(target) => (*target).bytes(),
+            Type::Unlim(_) => vec![],
+            Type::InVar(a) => a.as_bytes().into(),
         }
     }
 
@@ -57,6 +73,11 @@ impl Type {
             Type::i32(_) => Type::i32(0),
             Type::Bytes(_) => Type::Bytes(vec![]),
             Type::Str(_) => Type::Str(vec![]),
+
+            Type::Ptr(_) => Type::Ptr(Box::from( Type::u64(0) )),
+
+            Type::Unlim(_) => Type::Unlim(vec![]),
+            Type::InVar(_) => Type::InVar(String::new()),
         }
     }
 }

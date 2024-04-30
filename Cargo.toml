@@ -21,7 +21,7 @@ members = [
 
 [dependencies]
 formatic = { workspace = true }
-iced-x86 = { version = "1.21.0", features = ["code_asm"] }
+iced-x86 = "1.21.0"
 
 [workspace.dependencies]
 formatic = { path = "crates/Formatic" }

@@ -210,7 +210,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
-    pub fn gen_x_arg_for_func(&mut self, name: &str, index: usize, arg: Type) -> Result<(), CodeGenLibError> {
+    pub fn gen_x_arg_for_func(&mut self, name: &str, index: usize, arg: Type, prev_args: &Vec<Type>) -> Result<(), CodeGenLibError> {
         // prepare func
         let mut func: (String, Vec<Type>) = (String::new(), vec![]);
 
@@ -225,7 +225,7 @@ impl IrFunctionBuilder {
 
         let mut used_regs = 0;
 
-        for _arg in func.1 {
+        for _arg in prev_args {
             if _arg.empty() == arg.empty() { break; }
 
             if _arg.in_reg() {
@@ -233,7 +233,22 @@ impl IrFunctionBuilder {
             }
         }
 
-        if used_regs <= self.abi.reg_args() && arg.in_reg() {
+        if arg.empty() == Type::InVar(String::new()) {
+            let var = self.get_var(
+                match arg {
+                    Type::InVar(x) => x,
+                    _ => "".into(),
+                }
+            )?;
+            
+            if used_regs <= self.abi.reg_args() {
+                self.generated.push(Load(self.abi.arg64(used_regs), self.abi.stack(var.1)));
+            } else {
+                self.generated.push( Load(Register::RAX, self.abi.stack(var.1)) );
+                self.generated.push( Push(Register::RAX) );
+            }
+
+        } else if used_regs <= self.abi.reg_args() && arg.in_reg() {
             match arg {
                 Type::u32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
                 Type::i32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
@@ -246,6 +261,13 @@ impl IrFunctionBuilder {
 
                     self.generated.push(MovPtr(self.abi.arg64(index), label_name));
                 },
+                Type::Ptr(content) => {
+                    let label_name = format!("{}.{}.{}", self.name, name, index);
+
+                    self.builder.define_label(&label_name, false, content.bytes());
+
+                    self.generated.push(MovPtr(self.abi.arg64(index), label_name));
+                },
                 _ => {},
             };
 
@@ -255,6 +277,13 @@ impl IrFunctionBuilder {
                     let label_name = format!("{}.{}.{}", self.name, name, index);
 
                     self.builder.define_label(&label_name, false, content);
+
+                    self.generated.push(PushPtr(label_name));
+                },
+                Type::Ptr(content) => {
+                    let label_name = format!("{}.{}.{}", self.name, name, index);
+
+                    self.builder.define_label(&label_name, false, content.bytes());
 
                     self.generated.push(PushPtr(label_name));
                 },
@@ -290,8 +319,14 @@ impl IrFunctionBuilder {
     pub fn build_call(&mut self, func: &str, args: Vec<Type>) -> Result<(), Box<dyn Error>> {
         let mut index = 0;
 
+        let mut prev_args = vec![];
+
         for arg in args {
-            self.gen_x_arg_for_func(func, index, arg)?;
+            self.gen_x_arg_for_func(func, index, arg.clone(), &prev_args)?;
+
+            prev_args.push( arg );
+
+            println!("{:?}", prev_args);
 
             index += 1;
         } 
@@ -301,6 +336,38 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
+    pub fn build_set(&mut self, name: &str, content: Type) -> Result<(), Box<dyn Error>> {
+
+        let var = self.get_var(name.into())?;
+
+        match content {
+            Type::u64(val) => { 
+                self.generated.push(MovVal(Register::RAX, val as i64));
+                self.generated.push(Store(Register::RAX, self.abi.stack(var.1)));
+            },
+            Type::u32(val) => { 
+                self.generated.push(MovVal(Register::EAX, val as i64));
+                self.generated.push(Store(Register::EAX, self.abi.stack(var.1)));
+            },
+            Type::i64(val) => { 
+                self.generated.push(MovVal(Register::RAX, val as i64));
+                self.generated.push(Store(Register::RAX, self.abi.stack(var.1)));
+            },
+            Type::i32(val) => { 
+                self.generated.push(MovVal(Register::EAX, val as i64));
+                self.generated.push(Store(Register::EAX, self.abi.stack(var.1)));
+            },
+            Type::Bytes(_) => {},
+            Type::Str(_) => {},
+            Type::Ptr(adr) => {},
+            Type::InVar(_) => {},
+            Type::Unlim(_) => {},
+        }
+
+
+        Ok(())
+    }
+    
     /// Sets the function public
     pub fn set_public(&mut self) {
         self.public = true;
