@@ -5,9 +5,10 @@ use formatic::{Decl, Link, Scope};
 use iced_x86::{MemoryOperand, Register};
 use iced_x86::{BlockEncoder, BlockEncoderOptions, Code, Instruction, InstructionBlock};
 
-use crate::abi::Abi;
+use crate::target::Abi;
 use super::AsmInstructionEnum;
 
+/// Turns the IR into machine code
 pub fn resolve(
     funcs: Vec<String>,
     labels: Vec<String>,
@@ -398,7 +399,7 @@ pub fn resolve(
             }
         };
 
-        let block = InstructionBlock::new(&instr, 0x0000_1248_FC84_0000);
+        let block = InstructionBlock::new(&instr, 0);
 
         let asm = BlockEncoder::encode(64, block, BlockEncoderOptions::NONE)?;
 

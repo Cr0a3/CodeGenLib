@@ -1,28 +1,21 @@
-use formatic::BinFormat;
+#![allow(unused_imports)]
+
 use iced_x86::{MemoryOperand, Register};
 
-pub mod windows;
-pub mod linux;
-
-#[allow(unused_imports)]
-use windows::WindowsAbi;
-
-#[allow(unused_imports)]
-use linux::LinuxAbi;
+use super::windows::WindowsAbi;
+use super::linux::LinuxAbi;
 
 /// Struct which saves the target ABI
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Abi {
-    reg_args: usize,
+    pub reg_args: usize,
     
-    regs_64: Vec<Register>,
-    regs_32: Vec<Register>,
+    pub regs_64: Vec<Register>,
+    pub regs_32: Vec<Register>,
 
-    return_reg: Register,
+    pub return_reg: Register,
 
-    stack_base: i64,
-
-    bin: BinFormat,
+    pub stack_base: i64,
 }
 
 impl Abi {
@@ -107,11 +100,6 @@ impl Abi {
             false,
             Register::None,
         )
-    }
-
-    /// Returns the `BinFormat` for the target abi
-    pub fn binary_format(&self) -> BinFormat {
-        self.bin
     }
 
     /// Returns the `Register` in which the return value is stored

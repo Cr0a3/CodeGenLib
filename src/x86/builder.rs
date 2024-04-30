@@ -103,6 +103,7 @@ impl Builder {
 
         // Defining labels
         for label in self.labels.iter() {
+
             let name = format!(".L{}", label.0);
 
             obj.add_decl(&name, Decl::Data({
@@ -118,7 +119,7 @@ impl Builder {
         obj.write(bin, Arch::X86_64, Endian::Litte)
     }
 
-    /// Adds the symbols/links/etc. from the other builder into the current if they doesn't exits
+    /// Syncronices the symbols/links/etc. from the other builder into the current if they doesn't exits
     pub fn sync(&mut self, other: &Builder) {
         for label in other.labels.keys() {
             let data = other.labels.get(label).unwrap().to_owned();

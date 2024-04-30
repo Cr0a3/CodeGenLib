@@ -17,8 +17,6 @@ impl WindowsAbi for Abi {
             return_reg: RAX,
 
             stack_base: 8,
-
-            bin: formatic::BinFormat::Coff,
         }
     }
 }

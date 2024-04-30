@@ -10,6 +10,7 @@ pub enum CodeGenLibError {
     FuncNotExist(String),
 }
 
+/// Result which stores T + CodeGenLibError
 pub type Result<T> = std::result::Result<T, CodeGenLibError>;
 
 impl fmt::Display for CodeGenLibError {

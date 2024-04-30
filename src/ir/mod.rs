@@ -8,6 +8,7 @@ pub use ir_builder::IrBuilder;
 pub use ir_builder::IrFunctionBuilder;
 pub use typ::Type;
 
+/// The enum of the IR
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AsmInstructionEnum {
     Ret,

@@ -8,7 +8,6 @@ version = "0.0.1"
 dependencies = [
  "formatic",
  "iced-x86",
- "lazy_static",
 ]
 
 [[package]]

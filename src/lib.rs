@@ -1,25 +1,33 @@
-//! CodeGenLib is a rust libary to generate x86-64Bit machine code (like llvm)
+//! CodeGenLib is a rust libary to generate x86-64Bit machine code (like LLVM)
 //!
 //! <h4>Example</h4>
 //!
 //! ```
-//! uuse std::error::Error;
-//! use CodeGenLib::{Builder, IR::*};
+//!use CodeGenLib::prelude::*;
 //!
-//! #[rustfmt::skip]
-//! pub fn main() -> Result<(), Box<dyn Error>> {
-//!     let mut builder = Builder::new();
+//!#[rustfmt::skip]
+//!pub fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!    let mut builder = IrBuilder::new(Target::host());
 //!
-//!     builder.define("call", true, vec![
-//!         Call("callme"),
-//!         MovVal(Register::EAX, 5),
-//!     ])?;
+//!    let add = builder.add("add");
+//!    add.args(vec![
+//!        ("x", Type::u64(0) ),
+//!        ("y", Type::u64(0) ),
+//!    ]);
 //!
-//!     builder.write("tmp/test.o")?;
+//!    add.vars(vec![
+//!        ("z", Type::u64(0) ),
+//!    ]);
 //!
-//!     Ok(())
-//! }
+//!    add.build_add("x", "y", "z")?;
+//!    add.build_return_var("z")?;
 //!
+//!    add.set_public();
+//!
+//!    builder.write("tmp/ir.o")?;
+//!
+//!    Ok(())
+//!}
 //! ```
 //!
 //! The examples would make a elf file with a function named call wich just calls
@@ -29,11 +37,9 @@
 
 pub mod error;
 pub mod ir;
-#[cfg(feature = "jit")]
-pub mod jit;
 pub mod opt;
 pub mod x86;
-pub mod abi;
+pub mod target;
 
 pub use ir::resolve::resolve;
 pub use x86::builder::Builder;
@@ -51,11 +57,7 @@ pub mod prelude {
     pub use crate::ir::IrBuilder;
     pub use crate::ir::Type;
 
-    pub use crate::abi::Abi;
+    pub use crate::target::Target;
 }
-
-//#[cfg(feature = "jit")]
-//pub use jit::typed::JitRuntime as Jit;
-
 /// BinaryFormat re-exported
 pub use formatic::BinFormat;

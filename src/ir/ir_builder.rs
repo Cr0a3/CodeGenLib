@@ -3,11 +3,12 @@ use std::error::Error;
 use iced_x86::Register;
 
 use crate::{
-    abi::Abi, error::CodeGenLibError, Builder
+    target::{Abi, Target}, error::CodeGenLibError, Builder
 };
 
 pub use super::{Type, AsmInstructionEnum::{self, *}};
 
+/// A struct which builds a function's ir
 #[derive(Debug, Clone)]
 pub struct IrFunctionBuilder {
     pub generated: Vec<AsmInstructionEnum>,
@@ -23,6 +24,7 @@ pub struct IrFunctionBuilder {
 }
 
 impl IrFunctionBuilder {
+    /// Returns new `IrFunctionBuilder`
     pub fn new(name: &str, builder: &mut Builder, abi: &Abi) -> Self {
         Self {
             generated: vec![],
@@ -119,6 +121,12 @@ impl IrFunctionBuilder {
         self.vars = mod_vars;
     }
 
+    /// Sets the extern functions
+    /// 
+    /// Needs this tuple:
+    /// ```
+    /// (Name, vec![TypeOfArg1, TypeOfArg2, ...])
+    /// ```
     pub fn efuncs(&mut self, funcs: Vec<(&str, Vec<Type>)>) {
 
         let mut mod_funcs: Vec<(String, Vec<Type>)> = vec![];
@@ -130,32 +138,7 @@ impl IrFunctionBuilder {
         self.funcs = mod_funcs;
     }
 
-    /// Throws error if given argument doesn't exists
-    fn check_arg(&self, name: String) -> Result<(), CodeGenLibError> {
-        for arg in self.args.iter() {
-            let arg = &arg.0;
-            let arg_name = &arg.0;
-
-            if &name == arg_name {
-                return Ok(());
-            }
-        }
-
-        Err(CodeGenLibError::VarNotExist(name))
-    }
-
-    fn check_var(&self, name: String) -> Result<(), CodeGenLibError> {
-        for var in self.vars.iter() {
-            let var_name = &var.0;
-
-            if &name == var_name {
-                return Ok(());
-            }
-        }
-
-        Err(CodeGenLibError::VarNotExist(name))
-    }
-
+    #[allow(dead_code)]
     fn get_arg(
         &self,
         name: String,
@@ -182,6 +165,11 @@ impl IrFunctionBuilder {
         Err(CodeGenLibError::VarNotExist(name))
     }
 
+    /// Builds an add which does:
+    /// 
+    /// ```
+    /// result_var = var1 + var2
+    /// ```
     pub fn build_add(
         &mut self,
         var1: &str,
@@ -204,6 +192,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
+    /// Returns the variable with the name `var_name`
     pub fn build_return_var(&mut self, var_name: &str) -> Result<(), CodeGenLibError> {
         let var = self.get_var(var_name.into())?;
 
@@ -215,6 +204,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
+    /// Returns given int
     pub fn build_return_int(&mut self, int: i64) -> Result<(), CodeGenLibError> {
         self.generated
            .push(MovVal(self.abi.ret_reg(), int));
@@ -296,6 +286,14 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
+    /// Calls function with name `func` and args `args`
+    /// 
+    /// **!** func needs to be definied via the efuncs-function else there will be sus errors
+    /// 
+    /// Example:
+    /// ```
+    /// func.build_call("printf", vec![Type::Str(b"Hello World!".into())])?;
+    /// ```
     pub fn build_call(&mut self, func: &str, args: Vec<Type>) -> Result<(), Box<dyn Error>> {
         let mut index = 0;
 
@@ -310,21 +308,23 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
+    /// Sets the function public
     pub fn set_public(&mut self) {
         self.public = true;
     }
 }
 
+/// Builder which handels `IrFunctionBuilders`
 pub struct IrBuilder {
     functs: Vec<IrFunctionBuilder>,
     pub build: Builder,
 
-    abi: Abi,
+    abi: Target,
 }
 
 impl IrBuilder {
-    pub fn new(target: Abi) -> Self {
-        println!("{:?}", target);
+    /// Returns new `IrFunctionBuilder` with the `target` Abi
+    pub fn new(target: Target) -> Self {
         Self { 
             functs: vec![], 
             build: Builder::new(),
@@ -332,14 +332,16 @@ impl IrBuilder {
         }
     }
 
+    /// Adds new function with name `name` and returns mutable reference
     pub fn add(&mut self, name: &str) -> &mut IrFunctionBuilder {
         self.functs.push(
-            IrFunctionBuilder::new(name, &mut self.build, &self.abi)
+            IrFunctionBuilder::new(name, &mut self.build, &self.abi.abi)
         );
 
         self.functs.last_mut().unwrap()
     }
 
+    /// Writes all functions/data etc. into outfile with path `outpath`
     pub fn write(&mut self, outpath: &str) -> Result<(), Box<dyn std::error::Error>> {
         for func in self.functs.iter() {
             let func = func.to_owned();
@@ -349,6 +351,6 @@ impl IrBuilder {
             self.build.define(&func.name, func.public, func.generated.clone())?;
         }
 
-        self.build.write(outpath, self.abi.binary_format())
+        self.build.write(outpath, self.abi.bin)
     }
 }

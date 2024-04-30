@@ -36,6 +36,7 @@ impl Type {
         }
     }
 
+    /// Returns the contents of the type as `Vec<u8>` 
     pub fn bytes(&self) -> Vec<u8> {
         match self {
             Type::u64(val) => val.to_be_bytes().into(),
@@ -47,6 +48,7 @@ impl Type {
         }
     }
 
+    /// Returns the type of self without value contents
     pub fn empty(&self) -> Self {
         match self {
             Type::u64(_) => Type::u64(0),

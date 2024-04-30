@@ -2,9 +2,9 @@
 name = "CodeGenLib"
 version = "0.0.1"
 edition = "2021"
-description = "A libary to generate AMD64 machine code (like LLVM)"
+description = "A libary to build compilers (like LLVM/Cranelift)"
 reposentory = "https://github.com/Toni-Graphics/CodeGenLib"
-keywords = ["codegen", "AMD64", "x64", "compiler"]
+keywords = ["codegen", "x86-64Bit", "x64", "compiler"]
 documentation = "https://docs.rs/CodeGenLib/latest/CodeGenLib/"
 categories = ["development-tools::ffi"] 
 license = "MPL-2.0"
@@ -14,9 +14,3 @@ license = "MPL-2.0"
 [dependencies]
 formatic =  { path = "../formatic/" }
 iced-x86 = { version = "1.21.0", features = ["code_asm"] }
-lazy_static = "1.4.0"
-
-[features]
-default = ["all"]
-jit = []
-all = ["default", "jit"]
