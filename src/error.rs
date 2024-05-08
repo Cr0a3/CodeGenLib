@@ -10,6 +10,7 @@ use std::fmt;
 pub enum CodeGenLibError {
     VarNotExist(String),
     FuncNotExist(String),
+    UnsuportedInIntepr(String),
 }
 
 /// Result which stores T + CodeGenLibError
@@ -20,6 +21,7 @@ impl fmt::Display for CodeGenLibError {
         let msg = match self {
             CodeGenLibError::VarNotExist(x) => format!("var {x} doesn't exits"),
             CodeGenLibError::FuncNotExist(x) => format!("func {x} doesn't exits"),
+            CodeGenLibError::UnsuportedInIntepr(x) => format!("{x} is unsuported in emulated jit"),
         };
 
         write!(f, "{}", msg)

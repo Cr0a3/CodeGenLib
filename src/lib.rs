@@ -40,6 +40,7 @@ pub mod ir;
 pub mod opt;
 pub mod x86;
 pub mod target;
+pub mod exec;
 
 pub use ir::resolve::resolve;
 pub use x86::builder::Builder;
@@ -60,6 +61,8 @@ pub mod prelude {
     pub use crate::ir::Type;
 
     pub use crate::target::Target;
+
+    pub use crate::exec::Intepr;
 }
 
 /// BinaryFormat re-exported

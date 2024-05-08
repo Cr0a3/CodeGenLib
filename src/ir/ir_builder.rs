@@ -13,10 +13,13 @@ pub use super::{Type, AsmInstructionEnum::{self, *}};
 pub struct IrFunctionBuilder {
     pub generated: Vec<AsmInstructionEnum>,
     pub name: String,
-    args: Vec<((String, u64, Option<Register>), u64)>,
-    vars: Vec<(String, i64)>, // i64 -> stack offset
+    args: Vec<((String, u64, Option<Register>, Type), u64)>,
+    vars: Vec<(String, i64, Type)>, // i64 -> stack offset
     funcs: Vec<(String, Vec<Type>)>,
     public: bool,
+
+    /// for label names
+    parsed_label_args: usize,
 
     abi: Abi,
 
@@ -40,6 +43,8 @@ impl IrFunctionBuilder {
             builder: builder.to_owned(),
 
             abi: abi.to_owned(),
+
+            parsed_label_args: 0,
         }
     }
 
@@ -47,7 +52,7 @@ impl IrFunctionBuilder {
     ///  * `String` -> The argument name
     ///  * `u64` -> The argument size in bytes
     pub fn args(&mut self, args: Vec<(&str, Type)>) {
-        let mut mod_args: Vec<((String, u64, Option<Register>), u64)> = vec![];
+        let mut mod_args: Vec<((String, u64, Option<Register>, Type), u64)> = vec![];
 
         let mut reg_pasted_args = 0;
 
@@ -69,7 +74,7 @@ impl IrFunctionBuilder {
                 }
             };
 
-            mod_args.push(((arg.0.into(), arg.1.size(), reg), prev_size));
+            mod_args.push(((arg.0.into(), arg.1.size(), reg, arg.1.clone()), prev_size));
 
             prev_size += arg.1.size();
         }
@@ -82,8 +87,8 @@ impl IrFunctionBuilder {
     ///  * `String` -> The argument name
     ///  * `u64` -> The var size in bytes
     pub fn vars(&mut self, vars: Vec<(&str, Type)>) {
-        let mut mod_vars: Vec<(String, i64)> = vec![];
-        let mut stack_args: Vec<(String, u64)> = vec![];
+        let mut mod_vars: Vec<(String, i64, Type)> = vec![];
+        let mut stack_args: Vec<(String, u64, Type)> = vec![];
 
         let mut stack_offset: i64 = 8;
 
@@ -95,21 +100,21 @@ impl IrFunctionBuilder {
                 self.generated
                    .push(Store(arg.0.2.unwrap(), self.abi.stack(-stack_offset)));
 
-                mod_vars.push((name.into(), -stack_offset));
+                mod_vars.push((name.into(), -stack_offset, arg.0.3.clone()));
             } else {
-               stack_args.push((name.into(), size));
-               mod_vars.push((name.to_string(), stack_offset));
+               stack_args.push((name.into(), size, arg.0.3.clone()));
+               mod_vars.push((name.to_string(), stack_offset, arg.0.3.clone()));
             }
 
             stack_offset += size as i64;
         }
 
         for var in stack_args {
-            mod_vars.push((var.0, var.1 as i64));
+            mod_vars.push((var.0, var.1 as i64, var.2));
         }
 
         for var in vars {
-            mod_vars.push((var.0.into(), -stack_offset));
+            mod_vars.push((var.0.into(), -stack_offset, var.1.clone()));
 
             stack_offset += var.1.size() as i64;
         }
@@ -134,11 +139,15 @@ impl IrFunctionBuilder {
         self.funcs = mod_funcs;
     }
 
+    pub fn efunc(&mut self, efunc: (String, Vec<Type>)) {
+        self.funcs.push(efunc);
+    }
+
     #[allow(dead_code)]
     fn get_arg(
         &self,
         name: String,
-    ) -> Result<((String, u64, Option<Register>), u64), CodeGenLibError> {
+    ) -> Result<((String, u64, Option<Register>, Type), u64), CodeGenLibError> {
         for arg in self.args.iter() {
             let arg_1 = &arg.0;
             let arg_name = &arg_1.0;
@@ -151,7 +160,7 @@ impl IrFunctionBuilder {
         Err(CodeGenLibError::VarNotExist(name))
     }
 
-    fn get_var(&self, name: String) -> Result<(String, i64), CodeGenLibError> {
+    fn get_var(&self, name: String) -> Result<(String, i64, Type), CodeGenLibError> {
         for var in self.vars.iter() {
             if var.0 == name {
                 return Ok(var.to_owned());
@@ -210,7 +219,7 @@ impl IrFunctionBuilder {
         Ok(())
     }
 
-    pub fn gen_x_arg_for_func(&mut self, name: &str, index: usize, arg: Type, prev_args: &Vec<Type>) -> Result<(), CodeGenLibError> {
+    pub fn gen_x_arg_for_func(&mut self, name: &str, index: usize, ref original_arg: Type, prev_args: &Vec<Type>) -> Result<(), CodeGenLibError> {
         // prepare func
         let mut func: (String, Vec<Type>) = (String::new(), vec![]);
 
@@ -225,8 +234,21 @@ impl IrFunctionBuilder {
 
         let mut used_regs = 0;
 
-        for _arg in prev_args {
-            if _arg.empty() == arg.empty() { break; }
+        let mut arg = original_arg.clone();
+
+        for mut _arg in prev_args.to_owned() {
+
+            if _arg.empty() == Type::InVar(String::new()) {      
+                let var = self.get_var(
+                    match arg {
+                        Type::InVar(x) => x.to_owned(),
+                        _ => "".into(),
+                    }
+                )?;
+
+                _arg = var.2.clone();
+                arg = var.2;
+            }
 
             if _arg.in_reg() {
                 used_regs += 1;
@@ -234,20 +256,52 @@ impl IrFunctionBuilder {
         }
 
         if arg.empty() == Type::InVar(String::new()) {
+            println!("{:?}", original_arg);
             let var = self.get_var(
-                match arg {
-                    Type::InVar(x) => x,
+                match original_arg {
+                    Type::InVar(x) => x.to_owned(),
                     _ => "".into(),
                 }
             )?;
-            
-            if used_regs <= self.abi.reg_args() {
-                self.generated.push(Load(self.abi.arg64(used_regs), self.abi.stack(var.1)));
-            } else {
-                self.generated.push( Load(Register::RAX, self.abi.stack(var.1)) );
-                self.generated.push( Push(Register::RAX) );
-            }
 
+            match var.2 {
+                Type::u64(_) => { 
+                    if arg.in_reg() && used_regs <= self.abi.reg_args() {
+                        self.generated.push(Store(self.abi.arg64(used_regs), self.abi.stack(var.1)));
+                    } else {
+                        self.generated.push(Load(Register::RAX, self.abi.stack(var.1)));
+                        self.generated.push(Push(Register::RAX));
+                    }
+                },
+                Type::u32(_) => { 
+                    if arg.in_reg() && used_regs <= self.abi.reg_args() {
+                        self.generated.push(Store(self.abi.arg32(used_regs), self.abi.stack(var.1)));
+                    } else {
+                        self.generated.push(Load(Register::RAX, self.abi.stack(var.1)));
+                        self.generated.push(Push(Register::RAX));
+                    }
+                },
+                Type::i64(_) => { 
+                    if arg.in_reg() && used_regs <= self.abi.reg_args() {
+                        self.generated.push(Store(self.abi.arg64(used_regs), self.abi.stack(var.1)));
+                    } else {
+                        self.generated.push(Load(Register::RAX, self.abi.stack(var.1)));
+                        self.generated.push(Push(Register::RAX));
+                    }
+                },
+                Type::i32(_) => { 
+                    if arg.in_reg() && used_regs <= self.abi.reg_args() {
+                        self.generated.push(Store(self.abi.arg32(used_regs), self.abi.stack(var.1)));
+                    } else {
+                        self.generated.push(Load(Register::RAX, self.abi.stack(var.1)));
+                        self.generated.push(Push(Register::RAX));
+                    }
+                },
+                Type::Bytes(_) => todo!(),
+                Type::Str(_) => todo!(),
+                Type::Ptr(_) => todo!(),
+                _ => {},
+            }
         } else if used_regs <= self.abi.reg_args() && arg.in_reg() {
             match arg {
                 Type::u32(val) =>   {self.generated.push(MovVal(self.abi.arg32(used_regs), val as i64)); },
@@ -255,14 +309,18 @@ impl IrFunctionBuilder {
                 Type::u64(val) =>   {self.generated.push(MovVal(self.abi.arg64(used_regs), val as i64)); },
                 Type::i64(val) =>   {self.generated.push(MovVal(self.abi.arg64(used_regs), val as i64)); },
                 Type::Str(content) => {
-                    let label_name = format!("{}.{}.{}", self.name, name, index);
+                    let label_name = format!("{}.{}", self.name, self.parsed_label_args);
+
+                    self.parsed_label_args += 1;
 
                     self.builder.define_label(&label_name, false, content);
 
                     self.generated.push(MovPtr(self.abi.arg64(index), label_name));
                 },
                 Type::Ptr(content) => {
-                    let label_name = format!("{}.{}.{}", self.name, name, index);
+                    let label_name = format!("{}.{}", self.name, self.parsed_label_args);
+
+                    self.parsed_label_args += 1;
 
                     self.builder.define_label(&label_name, false, content.bytes());
 
@@ -274,14 +332,18 @@ impl IrFunctionBuilder {
         } else {
             match arg {
                 Type::Str(content) => {
-                    let label_name = format!("{}.{}.{}", self.name, name, index);
+                    let label_name = format!("{}.{}",self.name, self.parsed_label_args);
+
+                    self.parsed_label_args += 1;
 
                     self.builder.define_label(&label_name, false, content);
 
                     self.generated.push(PushPtr(label_name));
                 },
                 Type::Ptr(content) => {
-                    let label_name = format!("{}.{}.{}", self.name, name, index);
+                    let label_name = format!("{}.{}", self.name, self.parsed_label_args);
+                    
+                    self.parsed_label_args += 1;
 
                     self.builder.define_label(&label_name, false, content.bytes());
 
@@ -294,7 +356,9 @@ impl IrFunctionBuilder {
                 Type::i32(val) => { self.generated.push(PushVal(val as i64)) },
 
                 arg => {
-                    let label_name = format!("{}.{}.{}", self.name, name, index);
+                    let label_name = format!("{}.{}",self.name, self.parsed_label_args);
+                    
+                    self.parsed_label_args += 1;
 
                     self.builder.define_label(&label_name, false, arg.bytes());
         
@@ -359,7 +423,7 @@ impl IrFunctionBuilder {
             },
             Type::Bytes(_) => {},
             Type::Str(_) => {},
-            Type::Ptr(adr) => {},
+            Type::Ptr(_adr) => {},
             Type::InVar(_) => {},
             Type::Unlim(_) => {},
         }
